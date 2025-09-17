@@ -1,7 +1,7 @@
 from api.utils import get_request_as_json
 
 
-async def get_courses() -> list:
+async def get_courses() -> list[int]:
     request_data = await get_request_as_json("available_courses")
     if request_data["error"]:
         return []
@@ -9,7 +9,7 @@ async def get_courses() -> list:
         return request_data["response"]
 
 
-async def get_programs(course: int) -> list:
+async def get_programs(course: int) -> list[str]:
     request_data = await get_request_as_json(f"available_programs?course={course}")
     if request_data["error"]:
         return []

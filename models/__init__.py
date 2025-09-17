@@ -1,5 +1,10 @@
 __all__ = [
-    "User",
+    "Error",
+    "ErrorType",
+    "CreateUserRequest",
+    "CreateUserResponse",
+    "User"
 ]
 
-from user import User
+from models.user import CreateUserRequest, CreateUserResponse, User
+from models.error import ErrorType, Error

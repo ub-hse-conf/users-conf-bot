@@ -11,6 +11,7 @@ from routers import start
 def register_routes(dp: Dispatcher):
     dp.include_router(start.router)
 
+
 async def register_commands_info(bot: Bot):
     await bot.set_my_commands(
         [

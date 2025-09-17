@@ -1,11 +1,12 @@
 from aiogram import Bot
 from aiogram.fsm.context import FSMContext
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import Message
 import re
 
-from api.hsepermhelper import get_courses, get_programs
+from api.hse_perm_helper import get_courses, get_programs
+from constants.texts import REGISTER_FAIL_BTN, REGISTER_OK_BTN, SCHEDULE_BTN, ACTIVITY_MAP_BTN, NU_KAK_TAM_S_DENGAMI_BTN
 from constants.transcription import type_of_program_dict
 
 
@@ -62,11 +63,26 @@ async def get_programs_keyboard(course: int) -> InlineKeyboardMarkup:
 async def get_registration_result_keyboard():
     builder = InlineKeyboardBuilder()
     builder.add(
-        InlineKeyboardButton(text="Нет, пройду сначала", callback_data="register_False"),
-        InlineKeyboardButton(text="Да, все окей!", callback_data="register_True")
+        InlineKeyboardButton(text=REGISTER_FAIL_BTN, callback_data="register_False"),
+        InlineKeyboardButton(text=REGISTER_OK_BTN, callback_data="register_True")
     )
     builder.adjust(2)
     return builder.as_markup()
+
+
+def get_main_reply_keyboard():
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [
+                KeyboardButton(text=SCHEDULE_BTN),
+                KeyboardButton(text=ACTIVITY_MAP_BTN),
+            ],
+            [
+                KeyboardButton(text=NU_KAK_TAM_S_DENGAMI_BTN)
+            ]
+        ],
+        resize_keyboard=True
+    )
 
 
 def parse_name(name: str) -> bool:
@@ -80,6 +96,7 @@ def parse_name(name: str) -> bool:
 def parse_email(email: str) -> bool:
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return True if re.match(pattern, email) else False
+
 
 async def send_error_message(state: FSMContext, user_message: Message, text: str) -> None:
     error_message = await user_message.answer(text=text)

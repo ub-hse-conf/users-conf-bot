@@ -5,9 +5,11 @@ from aiogram.filters.state import State, StatesGroup
 from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery, InlineKeyboardMarkup
 from aiogram.fsm.context import FSMContext
 
+from constants.texts import HELLO_TEXT, FIO_ERROR_TEXT, PROGRAM_CHANGE_TEXT, COURSE_CHANGE_TEXT, EMAIL_CHANGE_TEXT, \
+    EMAIL_ERROR_TEXT, RESULT_TEXT, COMMAND_TEXT
 from constants.transcription import type_of_program_dict
 from middlewares.utils import get_courses_keyboard, get_programs_keyboard, parse_name, send_error_message, \
-    is_error_message, remove_error_message, get_registration_result_keyboard, parse_email
+    is_error_message, remove_error_message, get_registration_result_keyboard, parse_email, get_main_reply_keyboard
 
 router = Router()
 
@@ -26,7 +28,7 @@ class Form(StatesGroup):
 async def cmd_start(message: Message, state: FSMContext) -> None:
     await state.set_state(Form.name)
     bot_message = await message.answer(
-        "Здравствуйте! Давайте пройдем регистрацию. Введите фамилию, имя и отчество (при наличии) через пробел",
+        text=HELLO_TEXT,
         reply_markup=ReplyKeyboardRemove()
     )
     await state.update_data(info_message_id=bot_message.message_id)
@@ -36,10 +38,7 @@ async def cmd_start(message: Message, state: FSMContext) -> None:
 
 @router.message(Form.name)
 async def cmd_name(message: Message, state: FSMContext, bot: Bot) -> None:
-    try:
-        await message.delete()
-    except:
-        pass
+
 
     if await is_error_message(state):
         await remove_error_message(
@@ -52,7 +51,7 @@ async def cmd_name(message: Message, state: FSMContext, bot: Bot) -> None:
         await send_error_message(
             user_message=message,
             state=state,
-            text="Пожалуйста, введите корректные фамилию, имя и отчество (при наличии)"
+            text=FIO_ERROR_TEXT
         )
         return
 
@@ -73,7 +72,7 @@ async def cmd_name(message: Message, state: FSMContext, bot: Bot) -> None:
             print(f"State 'name' exception: {e}")
 
     new_message = await message.answer(
-        "А теперь выберите Ваш курс:",
+        text=COURSE_CHANGE_TEXT,
         reply_markup=keyboard
     )
     await state.update_data(info_message_id=new_message.message_id)
@@ -81,28 +80,17 @@ async def cmd_name(message: Message, state: FSMContext, bot: Bot) -> None:
 
 @router.message(Form.course)
 async def cmd_course(message: Message, state: FSMContext) -> None:
-    try:
-        await message.delete()
-    except:
-        pass
     await state.update_data(course=message.text)
 
 
 @router.message(Form.program)
 async def cmd_program(message: Message, state: FSMContext) -> None:
-    try:
-        await message.delete()
-    except:
-        pass
     await state.update_data(program=message.text)
 
 
 @router.message(Form.email)
 async def cmd_email(message: Message, state: FSMContext, bot: Bot) -> None:
-    try:
-        await message.delete()
-    except:
-        pass
+
 
     if await is_error_message(state):
         await remove_error_message(
@@ -115,7 +103,7 @@ async def cmd_email(message: Message, state: FSMContext, bot: Bot) -> None:
         await send_error_message(
             user_message=message,
             state=state,
-            text="Пожалуйста, введите корректный email адрес"
+            text=EMAIL_ERROR_TEXT
         )
         return
 
@@ -134,11 +122,12 @@ async def cmd_email(message: Message, state: FSMContext, bot: Bot) -> None:
     keyboard = await get_registration_result_keyboard()
 
     await message.answer(
-        text=f"Ваше ФИО: {data['name']}\n"
-                              f"Ваш курс: {data['course']}\n"
-                              f"Ваше направление: {type_of_program_dict[data['program']]}\n"
-                              f"Ваш email: {data['email']}\n\n"
-                              f"Все верно?",
+        text=RESULT_TEXT.format(
+            fio=data["name"],
+            email=data["email"],
+            course=data["course"],
+            program=type_of_program_dict[data["program"]]
+        ),
         reply_markup=keyboard
     ),
 
@@ -156,7 +145,7 @@ async def process_course_choice(callback: CallbackQuery, state: FSMContext) -> N
 
     keyboard = await get_programs_keyboard(chosen_course)
     await callback.message.delete()
-    await callback.message.answer(f"Теперь направление:", reply_markup=keyboard)
+    await callback.message.answer(text=PROGRAM_CHANGE_TEXT, reply_markup=keyboard)
 
     await state.set_state(Form.program)
 
@@ -172,7 +161,7 @@ async def process_program_choice(callback: CallbackQuery, state: FSMContext) -> 
     await callback.message.delete()
 
     bot_message = await callback.message.answer(
-        "Теперь введите Вашу почту:",
+        text=EMAIL_CHANGE_TEXT,
         reply_markup=ReplyKeyboardRemove()
     )
     await state.update_data(info_message_id=bot_message.message_id)
@@ -184,12 +173,22 @@ async def register_end(callback: CallbackQuery, state: FSMContext) -> None:
     await callback.message.delete()
 
     if register_result == "True":
+        data = await state.get_data()
         await callback.answer(
-            text=f"Вы успешно зарегистрировались",
+            text=RESULT_TEXT.format(
+                fio=data["name"],
+                email=data["email"],
+                course=data["course"],
+                program=data["program"]
+            ),
             show_alert=False
         )
         await state.clear()
+        await callback.message.answer(
+            text=COMMAND_TEXT,
+            reply_markup=get_main_reply_keyboard()
+        )
+
     else:
         await state.clear()
         await cmd_start(callback.message, state)
-
