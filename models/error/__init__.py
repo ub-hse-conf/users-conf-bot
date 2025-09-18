@@ -3,5 +3,5 @@ __all__ = [
     "ErrorType"
 ]
 
-from error import Error
-from error_type import ErrorType
+from models.error.error import Error
+from models.error.error_type import ErrorType

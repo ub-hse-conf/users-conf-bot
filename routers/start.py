@@ -26,6 +26,10 @@ class Form(StatesGroup):
 
 @router.message(CommandStart())
 async def cmd_start(message: Message, state: FSMContext) -> None:
+    if len(message.text.split()) > 1:
+        raw_params = message.text.split()[1]
+        result = await visit_activity(message.chat.id, raw_params)
+
     await state.set_state(Form.name)
     bot_message = await message.answer(
         text=HELLO_TEXT,
@@ -38,7 +42,6 @@ async def cmd_start(message: Message, state: FSMContext) -> None:
 
 @router.message(Form.name)
 async def cmd_name(message: Message, state: FSMContext, bot: Bot) -> None:
-
 
     if await is_error_message(state):
         await remove_error_message(

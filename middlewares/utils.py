@@ -12,22 +12,13 @@ from constants.transcription import type_of_program_dict
 
 async def get_courses_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
-    course_list = await get_courses()
-    if len(course_list) > 0:
-        for course in course_list:
-            builder.add(InlineKeyboardButton(
-                text=f"{course}",
-                callback_data=f"course_{course}"
-            ))
-    else:
-        print("middlewares/utils.py: get_courses_keyboard: No courses found")
-        builder.add(
-            InlineKeyboardButton(text="1", callback_data="course_1"),
-            InlineKeyboardButton(text="2", callback_data="course_2"),
-            InlineKeyboardButton(text="3", callback_data="course_3"),
-            InlineKeyboardButton(text="4", callback_data="course_4"),
-            InlineKeyboardButton(text="5", callback_data="course_5")
-        )
+    builder.add(
+        InlineKeyboardButton(text="1", callback_data="course_1"),
+        InlineKeyboardButton(text="2", callback_data="course_2"),
+        InlineKeyboardButton(text="3", callback_data="course_3"),
+        InlineKeyboardButton(text="4", callback_data="course_4"),
+        InlineKeyboardButton(text="5", callback_data="course_5")
+    )
 
     builder.adjust(2)
     return builder.as_markup()
@@ -35,26 +26,21 @@ async def get_courses_keyboard() -> InlineKeyboardMarkup:
 
 async def get_programs_keyboard(course: int) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
-    programs_list = await get_programs(course)
-    if len(programs_list) > 0:
-        for program in programs_list:
-            builder.add(InlineKeyboardButton(
-                text=type_of_program_dict[program],
-                callback_data=f"program_{program}"
-            ))
-    else:
-        print("middlewares/utils.py: get_programs_keyboard: No programs found")
-        builder.add(
-            InlineKeyboardButton(text="Международный бакалавриат по бизнесу и экономике", callback_data="program_МБ"),
-            InlineKeyboardButton(text="Разработка информационных систем для бизнеса", callback_data="program_РИС"),
-            InlineKeyboardButton(text="История", callback_data="program_И"),
-            InlineKeyboardButton(text="Иностранные языки", callback_data="program_ИЯ"),
-            InlineKeyboardButton(text="Юриспруденция", callback_data="program_Ю"),
-            InlineKeyboardButton(text="Управление бизнесом", callback_data="program_УБ"),
-            InlineKeyboardButton(text="Экономика", callback_data="program_Э"),
-            InlineKeyboardButton(text="Программная инженерия", callback_data="program_ПИ"),
-            InlineKeyboardButton(text="Бизнес-информатика", callback_data="program_БИ")
-        )
+    builder.add(
+        InlineKeyboardButton(text="Международный бакалавриат по бизнесу и экономике", callback_data="program_МБ"),
+        InlineKeyboardButton(text="Разработка информационных систем для бизнеса", callback_data="program_РИС"),
+        InlineKeyboardButton(text="История", callback_data="program_И"),
+        InlineKeyboardButton(text="Иностранные языки", callback_data="program_ИЯ"),
+        InlineKeyboardButton(text="Юриспруденция", callback_data="program_Ю"),
+        InlineKeyboardButton(text="Управление бизнесом", callback_data="program_УБ"),
+        InlineKeyboardButton(text="Государственное и муниципальное управление", callback_data="program_ГМУ"),
+        InlineKeyboardButton(text="Финансовые стратегии и аналитика", callback_data="program_ФСА"),
+        InlineKeyboardButton(text="ИТ-Юрист", callback_data="program_ИЮ"),
+        InlineKeyboardButton(text="Бизнес аналитика", callback_data="program_БА"),
+        InlineKeyboardButton(text="Дизайн", callback_data="program_Д"),
+        InlineKeyboardButton(text="Управление развитием бизнеса", callback_data="program_УРБ"),
+        InlineKeyboardButton(text="ИТ-Юрист", callback_data="program_ИЮ"),
+    )
 
     builder.adjust(1)
     return builder.as_markup()

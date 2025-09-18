@@ -3,8 +3,14 @@ __all__ = [
     "ErrorType",
     "CreateUserRequest",
     "CreateUserResponse",
-    "User"
+    "User",
+    "Activity",
+    "ActivityType",
+    "EventStatus",
+    "Visitable",
+    "VisitResult"
 ]
 
 from models.user import CreateUserRequest, CreateUserResponse, User
 from models.error import ErrorType, Error
+from models.activity import Activity, ActivityType, EventStatus, Visitable, VisitResult

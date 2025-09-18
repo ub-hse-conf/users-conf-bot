@@ -19,17 +19,12 @@ class BaseClient:
         self._client: Optional[httpx.AsyncClient] = None
         self._timeout = httpx.Timeout(60.0)
 
-        ssl_context = ssl.create_default_context()
-        ssl_context.load_verify_locations("static/certs/lets-encrypt.pem")
-        self._ssl_context = ssl_context
-
     async def __aenter__(self):
         self._client = httpx.AsyncClient(
             base_url=self._base_url,
             headers=self._headers,
             timeout=self._timeout,
             auth=(self.username, self.password),
-            verify=self._ssl_context,
         )
         return self
 
