@@ -158,16 +158,20 @@ def get_emoji_for_activity(activity_type: str):
         return "📖"
 
 
-def create_company_info_answer(company: Company) -> Message:
-    text = COMPANY_VISIT.format(company.name) + "\n" + company.description
-    btn = InlineKeyboardButton(
-        url=company.siteUrl,
-        text=TO_SITE
-    )
-    return Message(
-        text=text,
-        reply_markup=InlineKeyboardMarkup(
-            inline_keyboard=[[btn]]
-        )
-    )
+def is_https_url(url: str) -> bool:
+    pattern = r'^https://'
+    return bool(re.match(pattern, url, re.IGNORECASE))
+
+
+async def send_company_info(message: Message, company: Company):
+    text = COMPANY_VISIT.format(company=company.name) + "\n"
+    if company.description is not None:
+        text += company.description
+
+    if company.siteUrl is not None and company.siteUrl != "" and is_https_url(company.siteUrl):
+        btn = InlineKeyboardButton(url=company.siteUrl, text=TO_SITE)
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[[btn]])
+        await message.answer(text, reply_markup=keyboard)
+    else:
+        await message.answer(text)
 
