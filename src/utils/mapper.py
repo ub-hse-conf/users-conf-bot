@@ -20,16 +20,16 @@ def visit_result_from_json(json: dict) -> VisitResult:
             name=json["target"]["name"],
             description=json["target"]["description"],
         ),
-        targetType=TargetType[json["type"]],
+        targetType=TargetType[json["targetType"]],
     )
 
 
 def company_info_from_json(json: dict) -> Company:
     return Company(
-        name=json["company"]["name"],
-        description=json["company"]["description"],
-        siteUrl=json["company"]["siteUrl"],
-        id=int(json["company"]["id"])
+        name=json["name"],
+        description=json["description"],
+        siteUrl=json["siteUrl"],
+        id=int(json["id"])
     )
 
 # def visit_result_from_json(json: dict) -> VisitResult:

@@ -12,7 +12,7 @@ from src.constants.texts import HELLO_TEXT, FIO_ERROR_TEXT, PROGRAM_CHANGE_TEXT,
 from src.constants.transcription import type_of_program_dict
 from src.middlewares.utils import get_courses_keyboard, get_programs_keyboard, parse_name, send_error_message, \
     is_error_message, remove_error_message, get_registration_result_keyboard, parse_email, get_main_reply_keyboard, \
-    create_company_info_answer
+    send_company_info
 from src.models import CreateUserRequest
 
 router = Router()
@@ -35,8 +35,7 @@ async def cmd_start(message: Message, state: FSMContext, user_client: UserClient
         company = await user_client.visit_company(message.chat.id, raw_params)
         if company:
             companyInfo = await user_client.get_company_info(company_id=company.target.id)
-            msg = await create_company_info_answer(company=companyInfo)
-            await message.answer(msg)
+            await send_company_info(message, companyInfo)
         else:
             await message.answer(BAD_COMPANY_VISIT)
         return
@@ -111,7 +110,6 @@ async def cmd_program(message: Message, state: FSMContext) -> None:
 
 @router.message(Form.email)
 async def cmd_email(message: Message, state: FSMContext, bot: Bot) -> None:
-
 
     if await is_error_message(state):
         await remove_error_message(
