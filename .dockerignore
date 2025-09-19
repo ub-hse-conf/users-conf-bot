@@ -1,0 +1,5 @@
+.env
+.gitignore
+.github
+docker-compose.yaml
+docker-compose-local.yaml
