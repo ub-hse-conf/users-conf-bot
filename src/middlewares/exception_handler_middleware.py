@@ -29,4 +29,4 @@ class ExceptionHandlerMiddleware(BaseMiddleware):
             try:
                 await event.bot.send_message(chat_id=chat_id, text=EXCEPTION_MESSAGE.format(event.update_id))
             except Exception as e:
-                get_logger().exception("Error when sending exception message: {}", exc_info=e)
+                get_logger().exception("Error when sending exception message", exc_info=e)
