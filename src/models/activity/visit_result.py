@@ -8,4 +8,4 @@ from src.models.activity.target_type import TargetType
 @dataclass
 class VisitResult:
     target: Visitable
-    targetType: TargetType
+    type: TargetType

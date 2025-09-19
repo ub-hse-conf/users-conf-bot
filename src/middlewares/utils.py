@@ -137,7 +137,7 @@ def parse_activities(visits: List[VisitResult]) -> dict:
     }
 
     for visit in visits:
-        if visit.targetType == TargetType.ACTIVITY:
+        if visit.type == TargetType.ACTIVITY:
             sorted_activities[TargetType.ACTIVITY].append(visit.target)
         else:
             sorted_activities[TargetType.COMPANY].append(visit.target)
