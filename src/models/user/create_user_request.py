@@ -4,7 +4,7 @@ from dataclasses import dataclass
 @dataclass
 class CreateUserRequest:
     course: int
-    fullName: str
+    name: str
     program: str
     tgId: int
     email: str | None

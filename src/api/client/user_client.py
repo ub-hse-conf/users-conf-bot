@@ -12,7 +12,7 @@ class UserClient(BaseClient):
 
         payload = {
             "course": request.course,
-            "fullName": request.fullName,
+            "fullName": request.name,
             "program": request.program,
             "email": request.email,
             "tgId": request.tgId
@@ -37,12 +37,13 @@ class UserClient(BaseClient):
     async def get_user_qr(self, tg_id: int) -> bytes:
         url = f"/users/{tg_id}/qr"
 
-        result = await self._get_request(url)
-        if result.is_error:
-            error = self._parse_error(result.json())
-            raise ServerErrorException("Error while getting user qr code", error)
+        async with self as client:
+            result = await client._get_request(url)
+            if result.is_error:
+                error = self._parse_error(result.json())
+                raise ServerErrorException("Error while getting user qr code", error)
 
-        return result.content
+            return result.content
 
     async def get_user_tasks(self, tg_id: int) -> List[UserTask]:
         url = f"/users/{tg_id}/tasks"

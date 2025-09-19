@@ -12,6 +12,7 @@ from src.constants.texts import HELLO_TEXT, FIO_ERROR_TEXT, PROGRAM_CHANGE_TEXT,
 from src.constants.transcription import type_of_program_dict
 from src.middlewares.utils import get_courses_keyboard, get_programs_keyboard, parse_name, send_error_message, \
     is_error_message, remove_error_message, get_registration_result_keyboard, parse_email, get_main_reply_keyboard
+from src.models import CreateUserRequest
 
 router = Router()
 
@@ -178,12 +179,19 @@ async def process_program_choice(callback: CallbackQuery, state: FSMContext) -> 
 
 
 @router.callback_query(F.data.startswith("register_"))
-async def register_end(callback: CallbackQuery, state: FSMContext) -> None:
+async def register_end(callback: CallbackQuery, state: FSMContext, user_client: UserClient) -> None:
     register_result = callback.data.replace("register_", "")
     await callback.message.delete()
 
     if register_result == "True":
         data = await state.get_data()
+        await user_client.create_user(request=CreateUserRequest(
+            course=data["course"],
+            name=data["name"],
+            email=data["email"],
+            program=data["program"],
+            tgId=callback.message.chat.id
+        ))
         await callback.answer(
             text=RESULT_TEXT.format(
                 fio=data["name"],

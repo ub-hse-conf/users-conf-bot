@@ -5,7 +5,7 @@ from src.models.task import UserTaskType
 def user_from_json(json: dict) -> User:
     return User(
         userId=int(json["userId"]),
-        name=json["name"],
+        name=json["fullName"],
         email=json["email"],
         course=int(json["course"]),
         program=json["program"]

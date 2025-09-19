@@ -7,7 +7,8 @@ import re
 
 from structlog import get_logger
 
-from src.constants.texts import REGISTER_FAIL_BTN, REGISTER_OK_BTN, SCHEDULE_BTN, ACTIVITY_MAP_BTN, NU_KAK_TAM_S_DENGAMI_BTN
+from src.constants.texts import REGISTER_FAIL_BTN, REGISTER_OK_BTN, SCHEDULE_BTN, ACTIVITY_MAP_BTN, \
+    NU_KAK_TAM_S_DENGAMI_BTN, SEND_QR
 from src.constants.transcription import type_of_program_dict
 
 
@@ -71,6 +72,9 @@ async def get_registration_result_keyboard():
 def get_main_reply_keyboard():
     return ReplyKeyboardMarkup(
         keyboard=[
+            [
+                KeyboardButton(text=SEND_QR)
+            ],
             [
                 KeyboardButton(text=SCHEDULE_BTN),
                 KeyboardButton(text=ACTIVITY_MAP_BTN),
