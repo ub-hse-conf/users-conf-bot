@@ -20,7 +20,7 @@ def visit_result_from_json(json: dict) -> VisitResult:
             name=json["target"]["name"],
             description=json["target"]["description"],
         ),
-        targetType=TargetType[json["targetType"]],
+        type=TargetType[json["type"]],
     )
 
 
