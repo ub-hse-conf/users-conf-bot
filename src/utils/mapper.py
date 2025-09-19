@@ -1,4 +1,5 @@
-from src.models import User, VisitResult, Visitable, TargetType, UserTask, UserTaskStatus
+from src.models import User, VisitResult, Visitable, TargetType, UserTask, UserTaskStatus, Error, ErrorType, Activity
+from src.models.company import Company
 from src.models.task import UserTaskType
 
 
@@ -11,6 +12,7 @@ def user_from_json(json: dict) -> User:
         program=json["program"]
     )
 
+
 def visit_result_from_json(json: dict) -> VisitResult:
     return VisitResult(
         target=Visitable(
@@ -18,8 +20,34 @@ def visit_result_from_json(json: dict) -> VisitResult:
             name=json["target"]["name"],
             description=json["target"]["description"],
         ),
-        targetType=TargetType["targetType"],
+        targetType=TargetType[json["type"]],
     )
+
+
+def company_info_from_json(json: dict) -> Company:
+    return Company(
+        name=json["company"]["name"],
+        description=json["company"]["description"],
+        siteUrl=json["company"]["siteUrl"],
+        id=int(json["company"]["id"])
+    )
+
+# def visit_result_from_json(json: dict) -> VisitResult:
+#     return VisitResult(
+#         target=Activity(
+#             id=int(json["target"]["id"]),
+#             name=json["target"]["name"],
+#             description=json["target"]["description"],
+#             activityType=json["target"]["activityType"],
+#             endTime=json["target"]["endTime"],
+#             startTime=json["target"]["startTime"],
+#             location=json["target"]["location"],
+#             points=json["target"]["points"]
+#
+#         ),
+#         targetType=TargetType[json["type"]],
+#     )
+
 
 def user_task_from_json(json: dict) -> UserTask:
     return UserTask(
@@ -29,4 +57,11 @@ def user_task_from_json(json: dict) -> UserTask:
         is_available=json["isAvailable"],
         status=UserTaskStatus[json["status"]],
         task_type=UserTaskType[json["taskType"]],
+    )
+
+
+def parse_error(json: dict) -> Error:
+    return Error(
+        error_type=ErrorType[json["errorType"]],
+        message=json["message"],
     )

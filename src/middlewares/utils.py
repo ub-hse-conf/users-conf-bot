@@ -1,3 +1,5 @@
+from typing import List
+
 from aiogram import Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton, Update
@@ -8,8 +10,10 @@ import re
 from structlog import get_logger
 
 from src.constants.texts import REGISTER_FAIL_BTN, REGISTER_OK_BTN, SCHEDULE_BTN, ACTIVITY_MAP_BTN, \
-    NU_KAK_TAM_S_DENGAMI_BTN, SEND_QR
+    NU_KAK_TAM_S_DENGAMI_BTN, SEND_QR, ATTENDED_ACTIVITY, COMPANY_VISIT, TO_SITE
 from src.constants.transcription import type_of_program_dict
+from src.models import VisitResult, TargetType
+from src.models.company import Company
 
 
 async def send_message(user_id: int, update: Update, text: str):
@@ -52,7 +56,6 @@ async def get_programs_keyboard(course: int) -> InlineKeyboardMarkup:
         InlineKeyboardButton(text="Бизнес аналитика", callback_data="program_БА"),
         InlineKeyboardButton(text="Дизайн", callback_data="program_Д"),
         InlineKeyboardButton(text="Управление развитием бизнеса", callback_data="program_УРБ"),
-        InlineKeyboardButton(text="ИТ-Юрист", callback_data="program_ИЮ"),
     )
 
     builder.adjust(1)
@@ -80,7 +83,8 @@ def get_main_reply_keyboard():
                 KeyboardButton(text=ACTIVITY_MAP_BTN),
             ],
             [
-                KeyboardButton(text=NU_KAK_TAM_S_DENGAMI_BTN)
+                KeyboardButton(text=NU_KAK_TAM_S_DENGAMI_BTN),
+                KeyboardButton(text=ATTENDED_ACTIVITY),
             ]
         ],
         resize_keyboard=True
@@ -124,4 +128,46 @@ async def remove_error_message(state: FSMContext, message: Message, bot: Bot):
             )
         except Exception as e:
             get_logger().error("middlewares/utils.py: remove_error_message", exc_info=e)
+
+
+def parse_activities(visits: List[VisitResult]) -> dict:
+    sorted_activities = {
+        TargetType.COMPANY: [],
+        TargetType.ACTIVITY: []
+    }
+
+    for visit in visits:
+        if visit.targetType == TargetType.ACTIVITY:
+            sorted_activities[TargetType.ACTIVITY].append(visit.target)
+        else:
+            sorted_activities[TargetType.COMPANY].append(visit.target)
+
+    return sorted_activities
+
+
+def get_emoji_for_activity(activity_type: str):
+    if activity_type == "COMPANY":
+        return "⭐️"
+    elif activity_type == "WORKSHOP":
+        return "📖"
+    elif activity_type == "CONTEST":
+        return "🏆"
+    elif activity_type == "ACTIVITY":
+        return "🏆"
+    else:
+        return "📖"
+
+
+def create_company_info_answer(company: Company) -> Message:
+    text = COMPANY_VISIT.format(company.name) + "\n" + company.description
+    btn = InlineKeyboardButton(
+        url=company.siteUrl,
+        text=TO_SITE
+    )
+    return Message(
+        text=text,
+        reply_markup=InlineKeyboardMarkup(
+            inline_keyboard=[[btn]]
+        )
+    )
 

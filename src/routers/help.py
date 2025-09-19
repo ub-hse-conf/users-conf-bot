@@ -32,5 +32,4 @@ class Form(StatesGroup):
 async def cmd_qr(message: Message, state: FSMContext, user_client: UserClient) -> None:
     bot_message = await message.answer(
         text=COMMAND_TEXT,
-        reply_markup=ReplyKeyboardRemove()
     )
