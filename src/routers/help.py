@@ -18,9 +18,18 @@ from src.models import CreateUserRequest
 router = Router()
 
 
-@router.message(Command("menu"))
+class Form(StatesGroup):
+    name = State()
+    course = State()
+    program = State()
+    email = State()
+
+
+# Command level
+
+
+@router.message(Command("help"))
 async def cmd_qr(message: Message, state: FSMContext, user_client: UserClient) -> None:
     bot_message = await message.answer(
         text=COMMAND_TEXT,
-        reply_markup=get_main_reply_keyboard()
     )

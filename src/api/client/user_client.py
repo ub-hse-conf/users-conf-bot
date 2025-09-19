@@ -3,7 +3,9 @@ from typing import List
 from src.api.client.base_client import BaseClient
 from src.exception import ServerErrorException
 from src.models import CreateUserRequest, CreateUserResponse, Error, VisitResult, User, ErrorType, UserTask
-from src.utils.mapper import user_from_json, visit_result_from_json, user_task_from_json
+from src.models.company import Company
+from src.utils.mapper import user_from_json, visit_result_from_json, user_task_from_json, parse_error, \
+    company_info_from_json
 
 
 class UserClient(BaseClient):
@@ -12,7 +14,7 @@ class UserClient(BaseClient):
 
         payload = {
             "course": request.course,
-            "fullName": request.fullName,
+            "fullName": request.name,
             "program": request.program,
             "email": request.email,
             "tgId": request.tgId
@@ -26,7 +28,7 @@ class UserClient(BaseClient):
             user=user_from_json(result)
         )
 
-    async def get_user_data(self, tg_id: int) -> User:
+    async def get_user_data(self, tg_id: int) -> User | Error:
         url = f"/users/{tg_id}"
         result = await self._get_request_or_error(url)
         if isinstance(result, Error):
@@ -34,15 +36,29 @@ class UserClient(BaseClient):
 
         return user_from_json(result)
 
+    async def exists_user(self, tg_id: int) -> bool | Error:
+        url = f"/users/{tg_id}"
+        client: UserClient
+        async with self as client:
+            response = await client._get_request(url)
+            if response.status_code == 404:
+                return False
+
+            elif response.status_code == 200:
+                return True
+
+            return parse_error(response.json())
+
     async def get_user_qr(self, tg_id: int) -> bytes:
         url = f"/users/{tg_id}/qr"
 
-        result = await self._get_request(url)
-        if result.is_error:
-            error = self._parse_error(result.json())
-            raise ServerErrorException("Error while getting user qr code", error)
+        async with self as client:
+            result = await client._get_request(url)
+            if result.is_error:
+                error = self._parse_error(result.json())
+                raise ServerErrorException("Error while getting user qr code", error)
 
-        return result.content
+            return result.content
 
     async def get_user_tasks(self, tg_id: int) -> List[UserTask]:
         url = f"/users/{tg_id}/tasks"
@@ -52,7 +68,6 @@ class UserClient(BaseClient):
             raise ServerErrorException("Error while getting user tasks", result)
 
         return list(map(user_task_from_json, result))
-
 
     async def get_user_task_by_id(self, tg_id: int, task_id: int) -> UserTask:
         url = f"/users/{tg_id}/tasks/{task_id}"
@@ -81,3 +96,11 @@ class UserClient(BaseClient):
             raise ServerErrorException("Error while getting user visits", result)
 
         return list(map(visit_result_from_json, result))
+
+    async def get_company_info(self, company_id: int) -> Company | Error:
+        url = f"/companies/{company_id}"
+        result = await self._get_request_or_error(url)
+        if isinstance(result, Error):
+            raise ServerErrorException(f"Error while get information about company with id {company_id}", result)
+
+        return company_info_from_json(result)
