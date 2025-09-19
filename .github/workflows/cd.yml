@@ -1,0 +1,153 @@
+name: Bot CD
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  IMAGE_NAME: cub-telegram-bot
+  STABLE_TAG: stable
+
+jobs:
+  validate-mr:
+    name: "Validate MR"
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, 'Merge pull request')
+
+    outputs:
+      pr_num: ${{ steps.extract-pr.outputs.pr_num }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract PR number
+        id: extract-pr
+        run: |
+          PR_NUMBER=$(echo "${{ github.event.head_commit.message }}" | grep -o '#[0-9]*' | head -1 | tr -d '#')
+          echo "pr_num=$PR_NUMBER" >> $GITHUB_OUTPUT
+
+  test-and-lint:
+    name: "Test and lint"
+    runs-on: ubuntu-latest
+    needs: [validate-mr]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Lint with flake8
+        run: |
+          pip install flake8
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
+  build-image:
+    name: "Build docker image"
+    runs-on: ubuntu-latest
+    needs: [validate-mr, test-and-lint]
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image_id: ${{ steps.image-build.outputs.image_id }}
+      tag: ${{ steps.image-build.outputs.tag }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build docker image with cache
+        run: |
+          docker build -t $IMAGE_NAME .
+
+      - name: Login to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Tag & publish to GitHub Container Registry
+        id: image-build
+        run: |
+          REPOSITORY_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_ID=ghcr.io/$REPOSITORY_OWNER/$IMAGE_NAME
+          PR_NUMBER=${{ needs.validate-mr.outputs.pr_num }}
+          TAG="pr-${PR_NUMBER}"
+          echo "tag=$TAG">> $GITHUB_OUTPUT
+          echo "image_id=$IMAGE_ID">> $GITHUB_OUTPUT
+          IMAGE=$IMAGE_ID:$TAG
+          docker tag $IMAGE_NAME $IMAGE
+          docker push $IMAGE
+
+  deploy:
+    name: "Deploy new project version"
+    runs-on: ubuntu-latest
+    needs: build-image
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Deploy new project version to master server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd cub-telegram-bot
+            echo "Running on ${{needs.build-image.outputs.tag}} environment"
+            ./deploy.sh "${{needs.build-image.outputs.tag}}"
+
+      - name: Mark as stable after success
+        if: success()
+        env:
+          IMAGE_ID: ${{needs.build-image.outputs.image_id}}
+          TAG: ${{needs.build-image.outputs.tag}}
+        run: |
+          PR_IMAGE=$IMAGE_ID:$TAG
+          STABLE_IMAGE=$IMAGE_ID:$STABLE_TAG
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker pull $PR_IMAGE
+          docker tag $PR_IMAGE $STABLE_IMAGE
+          docker push $STABLE_IMAGE
+
+  update-version:
+    name: "Increase bot version"
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update version with build number
+        run: |
+          if [ -f "VERSION" ]; then
+            current=$(cat VERSION)
+            major=$(echo $current | cut -d. -f1)
+            minor=$(echo $current | cut -d. -f2) 
+            patch=$(echo $current | cut -d. -f3)
+            build=$(echo $current | cut -d. -f4)
+            new_build=$((build + 1))
+            echo "$major.$minor.$patch.$new_build" > VERSION
+          else
+            echo "1.0.0" > VERSION
+          fi
+          
+          echo "New version: $(cat VERSION)"
+
+      - name: Commit version
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git add VERSION
+          git commit -m "cd: auto bump version"
+          git push
