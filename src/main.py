@@ -21,7 +21,7 @@ async def main():
 
     storage = create_bot_storage()
 
-    dp = Dispatcher(user_client=user_client)
+    dp = Dispatcher(user_client=user_client, storage=storage)
     bot = CustomBot.create(BOT_TOKEN, storage)
     await routers.register_commands_info(bot)
 
