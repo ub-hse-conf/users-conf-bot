@@ -14,7 +14,7 @@ class UserClient(BaseClient):
 
         payload = {
             "course": request.course,
-            "fullName": request.name,
+            "fullName": request.fullName,
             "program": request.program,
             "email": request.email,
             "tgId": request.tgId

@@ -195,7 +195,7 @@ async def register_end(callback: CallbackQuery, state: FSMContext, user_client: 
         data = await state.get_data()
         await user_client.create_user(request=CreateUserRequest(
             course=data["course"],
-            name=data["name"],
+            fullName=data["name"],
             email=data["email"],
             program=data["program"],
             tgId=callback.message.chat.id
