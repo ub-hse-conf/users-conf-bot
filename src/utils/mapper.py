@@ -6,7 +6,7 @@ from src.models.task import UserTaskType
 def user_from_json(json: dict) -> User:
     return User(
         userId=int(json["userId"]),
-        name=json["name"],
+        fullName=json["fullName"],
         email=json["email"],
         course=int(json["course"]),
         program=json["program"],
@@ -21,7 +21,7 @@ def visit_result_from_json(json: dict) -> VisitResult:
             name=json["target"]["name"],
             description=json["target"]["description"],
         ),
-        type=TargetType[json["type"]],
+        targetType=TargetType[json["targetType"]],
     )
 
 

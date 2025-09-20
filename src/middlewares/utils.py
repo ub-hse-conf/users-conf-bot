@@ -1,6 +1,7 @@
 from typing import List
 
 from aiogram import Bot
+from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton, Update
 from aiogram.utils.keyboard import InlineKeyboardBuilder
@@ -10,7 +11,7 @@ import re
 from structlog import get_logger
 
 from src.constants.texts import REGISTER_FAIL_BTN, REGISTER_OK_BTN, SCHEDULE_BTN, ACTIVITY_MAP_BTN, \
-    NU_KAK_TAM_S_DENGAMI_BTN, SEND_QR, ATTENDED_ACTIVITY, COMPANY_VISIT, TO_SITE
+    NU_KAK_TAM_S_DENGAMI_BTN, SEND_QR, ATTENDED_ACTIVITY, COMPANY_VISIT, TO_SITE, TASK_LIST
 from src.constants.transcription import type_of_program_dict
 from src.models import VisitResult, TargetType
 from src.models.company import Company
@@ -63,7 +64,8 @@ def get_main_reply_keyboard():
     return ReplyKeyboardMarkup(
         keyboard=[
             [
-                KeyboardButton(text=SEND_QR)
+                KeyboardButton(text=SEND_QR),
+                KeyboardButton(text=TASK_LIST)
             ],
             [
                 KeyboardButton(text=SCHEDULE_BTN),
@@ -124,7 +126,7 @@ def parse_activities(visits: List[VisitResult]) -> dict:
     }
 
     for visit in visits:
-        if visit.type == TargetType.ACTIVITY:
+        if visit.targetType == TargetType.ACTIVITY:
             sorted_activities[TargetType.ACTIVITY].append(visit.target)
         else:
             sorted_activities[TargetType.COMPANY].append(visit.target)
@@ -158,7 +160,14 @@ async def send_company_info(message: Message, company: Company):
     if company.siteUrl is not None and company.siteUrl != "" and is_https_url(company.siteUrl):
         btn = InlineKeyboardButton(url=company.siteUrl, text=TO_SITE)
         keyboard = InlineKeyboardMarkup(inline_keyboard=[[btn]])
-        await message.answer(text, reply_markup=keyboard)
+        await message.answer(
+            text=text,
+            reply_markup=keyboard,
+            parse_mode=ParseMode.HTML
+        )
     else:
-        await message.answer(text)
+        await message.answer(
+            text=text,
+            parse_mode=ParseMode.HTML
+        )
 

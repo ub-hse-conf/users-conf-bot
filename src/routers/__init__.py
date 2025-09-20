@@ -5,7 +5,7 @@ __all__ = [
 
 from aiogram import Dispatcher, Bot
 from aiogram.types import BotCommand, BotCommandScopeDefault
-from src.routers import start, qr, menu, help, attended_activity
+from src.routers import start, qr, menu, help, attended_activity, status, tasks, location_map, activity_schedule
 
 
 def register_routes(dp: Dispatcher):
@@ -14,16 +14,23 @@ def register_routes(dp: Dispatcher):
     dp.include_router(menu.router)
     dp.include_router(help.router)
     dp.include_router(attended_activity.router)
+    dp.include_router(status.router)
+    dp.include_router(tasks.router)
+    dp.include_router(location_map.router)
+    dp.include_router(activity_schedule.router)
 
 
 async def register_commands_info(bot: Bot):
     await bot.set_my_commands(
         [
-            BotCommand(command='start', description='Регистрация или изменение данных о себе'),
-            BotCommand(command='help', description='Получить список команд'),
+            BotCommand(command='help', description='Помощь с конференцией'),
             BotCommand(command='menu', description='Получить меню с кнопками'),
             BotCommand(command='qr', description='Получить свой qr-код'),
             BotCommand(command='activities', description='Мои активности'),
+            BotCommand(command='gifts', description='Как получить подарки'),
+            BotCommand(command='tasks', description='Мои задания'),
+            BotCommand(command='schedule', description='Расписание активностей'),
+            BotCommand(command='map', description='Карта активностей'),
         ],
         scope=BotCommandScopeDefault()
     )
