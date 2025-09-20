@@ -43,21 +43,8 @@ async def get_courses_keyboard() -> InlineKeyboardMarkup:
 
 async def get_programs_keyboard(course: int) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
-    builder.add(
-        InlineKeyboardButton(text="Международный бакалавриат по бизнесу и экономике", callback_data="program_МБ"),
-        InlineKeyboardButton(text="Разработка информационных систем для бизнеса", callback_data="program_РИС"),
-        InlineKeyboardButton(text="История", callback_data="program_И"),
-        InlineKeyboardButton(text="Иностранные языки", callback_data="program_ИЯ"),
-        InlineKeyboardButton(text="Юриспруденция", callback_data="program_Ю"),
-        InlineKeyboardButton(text="Управление бизнесом", callback_data="program_УБ"),
-        InlineKeyboardButton(text="Государственное и муниципальное управление", callback_data="program_ГМУ"),
-        InlineKeyboardButton(text="Финансовые стратегии и аналитика", callback_data="program_ФСА"),
-        InlineKeyboardButton(text="ИТ-Юрист", callback_data="program_ИЮ"),
-        InlineKeyboardButton(text="Бизнес аналитика", callback_data="program_БА"),
-        InlineKeyboardButton(text="Дизайн", callback_data="program_Д"),
-        InlineKeyboardButton(text="Управление развитием бизнеса", callback_data="program_УРБ"),
-    )
-
+    for key in type_of_program_dict.keys():
+        builder.add(InlineKeyboardButton(text=type_of_program_dict[key], callback_data=f"program_{key}"))
     builder.adjust(1)
     return builder.as_markup()
 

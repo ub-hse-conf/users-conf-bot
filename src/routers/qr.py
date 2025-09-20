@@ -26,3 +26,9 @@ async def cmd_qr(message: Message, user_client: UserClient) -> None:
         photo=input_file,
         caption=QR_CODE_TEXT,
     )
+
+
+@router.message(Command("get_id"))
+async def get_chat_id(message: Message):
+    chat_id = message.chat.id
+    await message.reply(f"Chat ID: {chat_id}")
