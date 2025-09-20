@@ -217,4 +217,4 @@ async def register_end(callback: CallbackQuery, state: FSMContext, user_client: 
 
     else:
         await state.clear()
-        await cmd_start(callback.message, state)
+        await cmd_start(callback.message, state, user_client)
