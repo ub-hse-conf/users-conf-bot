@@ -11,7 +11,8 @@ import re
 from structlog import get_logger
 
 from src.constants.texts import REGISTER_FAIL_BTN, REGISTER_OK_BTN, SCHEDULE_BTN, ACTIVITY_MAP_BTN, \
-    NU_KAK_TAM_S_DENGAMI_BTN, SEND_QR, ATTENDED_ACTIVITY, COMPANY_VISIT, TO_SITE, TASK_LIST
+    NU_KAK_TAM_S_DENGAMI_BTN, SEND_QR, ATTENDED_ACTIVITY, COMPANY_VISIT, TO_SITE, TASK_LIST, activity, lecture, contest, \
+    workshop, company
 from src.constants.transcription import type_of_program_dict
 from src.models import VisitResult, TargetType
 from src.models.company import Company
@@ -136,15 +137,15 @@ def parse_activities(visits: List[VisitResult]) -> dict:
 
 def get_emoji_for_activity(activity_type: str):
     if activity_type == "COMPANY":
-        return "⭐️"
+        return company
     elif activity_type == "WORKSHOP":
-        return "📖"
+        return workshop
     elif activity_type == "CONTEST":
-        return "🏆"
+        return contest
     elif activity_type == "ACTIVITY":
-        return "🏆"
+        return activity
     else:
-        return "📖"
+        return lecture
 
 
 def is_https_url(url: str) -> bool:

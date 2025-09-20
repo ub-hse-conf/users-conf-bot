@@ -1,5 +1,10 @@
 # JUST UTILS
 coin = "⭐"
+activity = "⚡"
+company = "🏢"
+lecture = "🎓"
+contest = "🥇"
+workshop = "💡"
 
 # middlewares/utils
 REGISTER_OK_BTN = 'Да, все окей ✅!'
