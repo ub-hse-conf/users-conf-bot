@@ -7,15 +7,17 @@ from aiogram.client.default import DefaultBotProperties
 
 from src.config import WORKING_MODE, WEBHOOK_URL, WEBHOOK_PATH
 from src.models import WorkingMode
+from src.storage import BaseStorage
 
 
 class CustomBot(Bot):
     logger: Any
 
     @staticmethod
-    def create(token: str):
+    def create(token: str, storage: BaseStorage) -> Bot:
         return CustomBot(
             token=token,
+            storage=storage,
             default=DefaultBotProperties(parse_mode="Markdown"),
         )
 
