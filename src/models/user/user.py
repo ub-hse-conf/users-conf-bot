@@ -6,7 +6,7 @@ from src.models.user.user_role import UserRole
 @dataclass
 class User:
     userId: int
-    name: str
+    fullName: str
     course: int
     program: str
     role: UserRole
