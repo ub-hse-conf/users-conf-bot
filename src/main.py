@@ -7,6 +7,7 @@ from src import custom_logging, api, routers, middlewares
 from src.api import UserClient, endpoint
 from src.bot import CustomBot
 from src.config import BOT_TOKEN, BASE_URL, USERNAME_API, PASSWORD_API
+from src.storage import create_bot_storage
 from src.version import get_version
 
 
@@ -18,8 +19,10 @@ async def main():
 
     user_client = UserClient(base_url=BASE_URL, username=USERNAME_API, password=PASSWORD_API)
 
+    storage = create_bot_storage()
+
     dp = Dispatcher(user_client=user_client)
-    bot = CustomBot.create(BOT_TOKEN)
+    bot = CustomBot.create(BOT_TOKEN, storage)
     await routers.register_commands_info(bot)
 
     app = api.create_app_instance(bot)
