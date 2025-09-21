@@ -146,16 +146,19 @@ class UserClient(BaseClient):
             "keyWord": keyword.keyWord,
         }
 
-        result = await self._post_request(url, payload)
+        client: UserClient
+        async with self as client:
 
-        if result.is_error:
-            error = self._parse_error(result.json())
-            if error.error_type == ErrorType.ACTIVITY_NOT_FOUND:
-                return False
+            result = await client._post_request(url, payload)
 
-            raise ServerErrorException(f"Error while sending keyword", error)
+            if result.is_error:
+                error = self._parse_error(result.json())
+                if error.error_type == ErrorType.ACTIVITY_NOT_FOUND:
+                    return False
 
-        return True
+                raise ServerErrorException(f"Error while sending keyword", error)
+
+            return True
 
     async def get_all_activities(self) -> List[ActivityRequest] | Error:
         url = f"/activities/"
