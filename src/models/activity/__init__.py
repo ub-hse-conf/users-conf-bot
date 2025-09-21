@@ -4,7 +4,9 @@ __all__ = [
     "EventStatus",
     "Visitable",
     "VisitResult",
-    "TargetType"
+    "TargetType",
+    "ActivityRequest"
+
 ]
 
 from src.models.activity.activity import Activity
@@ -13,3 +15,4 @@ from src.models.activity.event_status import EventStatus
 from src.models.activity.target_type import TargetType
 from src.models.activity.visitable import Visitable
 from src.models.activity.visit_result import VisitResult
+from src.models.activity.activity_request import ActivityRequest
