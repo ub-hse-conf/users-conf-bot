@@ -3,8 +3,9 @@ import enum
 
 class ErrorType(enum.Enum):
     NONE = 0
-    USER_NOT_FOUND = 1
-    VISIT_ALREADY_EXISTS = 2
+    USER_NOT_FOUND = "USER_NOT_FOUND"
+    VISIT_ALREADY_EXISTS = "VISIT_ALREADY_EXISTS"
+    ACTIVITY_NOT_FOUND = "ACTIVITY_NOT_FOUND"
 
     def __missing__(self, key):
         return self.NONE

@@ -1,3 +1,5 @@
+from typing import List
+
 from src.models import User, VisitResult, Visitable, TargetType, UserTask, UserTaskStatus, Error, ErrorType, Activity, \
     Vote
 from src.models.company import Company
@@ -85,4 +87,17 @@ def vote_from_json(json: dict) -> Vote:
         userId=int(json["userId"]),
         answer=json["answer"],
         eventId=json["eventId"]
+    )
+
+
+def activities_from_json(json: dict) -> Activity:
+    return Activity(
+        activityType=json["activityType"],
+        name=json["name"],
+        description=json["description"],
+        endTime=json["endTime"],
+        startTime=json["startTime"],
+        location=json["location"],
+        id=int(json["id"]),
+        points=int(json["points"])
     )

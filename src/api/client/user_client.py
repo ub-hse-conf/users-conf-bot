@@ -3,11 +3,12 @@ from typing import List
 from src.api.client.base_client import BaseClient
 from src.exception import ServerErrorException
 from src.models import CreateUserRequest, CreateUserResponse, Error, VisitResult, User, ErrorType, UserTask, Vote, \
-    CreateVoteRequest
+    CreateVoteRequest, Activity
 from src.models.company import Company
+from src.models.keyword import Keyword
 from src.models.task import CompletedUserTask
 from src.utils.mapper import user_from_json, visit_result_from_json, user_task_from_json, parse_error, \
-    company_info_from_json, completed_task_from_json, vote_from_json
+    company_info_from_json, completed_task_from_json, vote_from_json, activities_from_json
 
 
 class UserClient(BaseClient):
@@ -133,3 +134,28 @@ class UserClient(BaseClient):
             raise ServerErrorException(f"Error while vote {activity_id}", result)
 
         return vote_from_json(result)
+
+    async def add_keyword(self, keyword: Keyword) -> str | None:
+        url = f"/activities/key-word"
+
+        payload = {
+            "tgId": keyword.tgId,
+            "keyWord": keyword.keyWord,
+        }
+
+        result = await self._post_request_or_error(url, payload)
+
+        if isinstance(result, Error):
+            if result.error_type == ErrorType.ACTIVITY_NOT_FOUND:
+                return "Unavailable activity"
+            raise ServerErrorException(f"Error while sending keyword", result)
+
+    async def get_all_activities(self) -> List[Activity] | Error:
+        url = f"/activities/"
+
+        result = await self._get_request_or_error(url)
+
+        if isinstance(result, Error):
+            raise ServerErrorException(f"Error while get information about all activities", result)
+
+        return list(map(activities_from_json, result))
