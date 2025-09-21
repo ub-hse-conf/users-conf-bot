@@ -5,7 +5,15 @@ __all__ = [
 
 from aiogram import Dispatcher, Bot
 from aiogram.types import BotCommand, BotCommandScopeDefault
-from src.routers import start, qr, menu, help, attended_activity, status, tasks, location_map, activity_schedule
+from src.routers import (start,
+                         qr,
+                         menu,
+                         help,
+                         attended_activity,
+                         status, tasks,
+                         location_map,
+                         activity_schedule,
+                         bereal)
 
 
 def register_routes(dp: Dispatcher):
@@ -18,6 +26,7 @@ def register_routes(dp: Dispatcher):
     dp.include_router(tasks.router)
     dp.include_router(location_map.router)
     dp.include_router(activity_schedule.router)
+    dp.include_router(bereal.router)
 
 
 async def register_commands_info(bot: Bot):

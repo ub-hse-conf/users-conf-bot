@@ -4,8 +4,9 @@ from src.api.client.base_client import BaseClient
 from src.exception import ServerErrorException
 from src.models import CreateUserRequest, CreateUserResponse, Error, VisitResult, User, ErrorType, UserTask
 from src.models.company import Company
+from src.models.task import CompletedUserTask
 from src.utils.mapper import user_from_json, visit_result_from_json, user_task_from_json, parse_error, \
-    company_info_from_json
+    company_info_from_json, completed_task_from_json
 
 
 class UserClient(BaseClient):
@@ -104,3 +105,13 @@ class UserClient(BaseClient):
             raise ServerErrorException(f"Error while get information about company with id {company_id}", result)
 
         return company_info_from_json(result)
+
+    async def complete_task(self, task_id: int, tg_id: int) -> CompletedUserTask | None:
+        url = f"/tasks/{task_id}/submit/{tg_id}"
+        result = await self._post_request_or_error(url)
+        if isinstance(result, Error):
+            if result.error_type == ErrorType.USER_NOT_FOUND:
+                return None
+            raise ServerErrorException(f"Error while completing task {task_id}", result)
+
+        return completed_task_from_json(result)

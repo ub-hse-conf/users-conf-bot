@@ -10,13 +10,6 @@ from src.constants.texts import HELP_MESSAGE
 router = Router()
 
 
-class Form(StatesGroup):
-    name = State()
-    course = State()
-    program = State()
-    email = State()
-
-
 @router.message(Command("help"))
 async def cmd_qr(message: Message) -> None:
     await message.answer(
