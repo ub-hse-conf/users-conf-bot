@@ -13,7 +13,8 @@ from src.routers import (start,
                          status, tasks,
                          location_map,
                          activity_schedule,
-                         bereal)
+                         bereal,
+                         ted)
 
 
 def register_routes(dp: Dispatcher):
@@ -27,6 +28,7 @@ def register_routes(dp: Dispatcher):
     dp.include_router(location_map.router)
     dp.include_router(activity_schedule.router)
     dp.include_router(bereal.router)
+    dp.include_router(ted.router)
 
 
 async def register_commands_info(bot: Bot):
