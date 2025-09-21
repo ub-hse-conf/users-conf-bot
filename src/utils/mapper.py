@@ -1,4 +1,5 @@
-from src.models import User, VisitResult, Visitable, TargetType, UserTask, UserTaskStatus, Error, ErrorType, Activity
+from src.models import User, VisitResult, Visitable, TargetType, UserTask, UserTaskStatus, Error, ErrorType, Activity, \
+    Vote
 from src.models.company import Company
 from src.models.task import UserTaskType, CompletedUserTask
 
@@ -75,4 +76,13 @@ def parse_error(json: dict) -> Error:
     return Error(
         error_type=ErrorType[json["errorType"]],
         message=json["message"],
+    )
+
+
+def vote_from_json(json: dict) -> Vote:
+    return Vote(
+        id=int(json["voteId"]),
+        userId=int(json["userId"]),
+        answer=json["answer"],
+        eventId=json["eventId"]
     )

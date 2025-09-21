@@ -2,11 +2,12 @@ from typing import List
 
 from src.api.client.base_client import BaseClient
 from src.exception import ServerErrorException
-from src.models import CreateUserRequest, CreateUserResponse, Error, VisitResult, User, ErrorType, UserTask
+from src.models import CreateUserRequest, CreateUserResponse, Error, VisitResult, User, ErrorType, UserTask, Vote, \
+    CreateVoteRequest
 from src.models.company import Company
 from src.models.task import CompletedUserTask
 from src.utils.mapper import user_from_json, visit_result_from_json, user_task_from_json, parse_error, \
-    company_info_from_json, completed_task_from_json
+    company_info_from_json, completed_task_from_json, vote_from_json
 
 
 class UserClient(BaseClient):
@@ -115,3 +116,20 @@ class UserClient(BaseClient):
             raise ServerErrorException(f"Error while completing task {task_id}", result)
 
         return completed_task_from_json(result)
+
+    async def add_user_answer(self, activity_id: int, request: CreateVoteRequest) -> Vote | None:
+        url = f"/activities/{activity_id}/event/answer"
+
+        payload = {
+            "userTgId": request.userTgId,
+            "answer": request.answer,
+        }
+
+        result = await self._post_request_or_error(url, payload)
+
+        if isinstance(result, Error):
+            if result.error_type == ErrorType.USER_NOT_FOUND:
+                return None
+            raise ServerErrorException(f"Error while vote {activity_id}", result)
+
+        return vote_from_json(result)

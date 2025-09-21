@@ -95,6 +95,14 @@ async def be_real_start(callback: CallbackQuery, state: FSMContext, user_client:
         )
         return
 
+    if "опрос" in task.description:
+        text = get_task_info(task)
+        await callback.message.answer(
+            text=text,
+            parse_mode=ParseMode.HTML
+        )
+        return
+
     await state.update_data(
         task_id=task.id,
         task_description=task.description,

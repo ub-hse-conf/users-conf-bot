@@ -12,7 +12,9 @@ __all__ = [
     "TargetType",
     "Visitable",
     "VisitResult",
-    "WorkingMode"
+    "WorkingMode",
+    "Vote",
+    "CreateVoteRequest"
 ]
 
 from src.models.task import UserTask, UserTaskStatus
@@ -20,3 +22,4 @@ from src.models.user import CreateUserRequest, CreateUserResponse, User
 from src.models.error import ErrorType, Error
 from src.models.activity import Activity, ActivityType, EventStatus, Visitable, VisitResult, TargetType
 from src.models.working_mode import WorkingMode
+from src.models.vote import Vote, CreateVoteRequest
