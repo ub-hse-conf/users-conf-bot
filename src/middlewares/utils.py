@@ -17,7 +17,7 @@ from src.config import BE_REAL_GROUP_ID, ADDITIONAL_TASKS_GROUP_ID
 from src.constants.texts import REGISTER_FAIL_BTN, REGISTER_OK_BTN, SCHEDULE_BTN, ACTIVITY_MAP_BTN, \
     NU_KAK_TAM_S_DENGAMI_BTN, SEND_QR, ATTENDED_ACTIVITY, COMPANY_VISIT, TO_SITE, TASK_LIST, activity, lecture, contest, \
     workshop, company, TASK_GENERAL_REQUIRE, CANCEL_BTN, SEND_CONFIRM_BTN, CHANGE_ANSWER, PREVIEW_TEXT, COMISSION_TEXT, \
-    MODERATOR_TEXT, MODERATION_CONCLUSION_TEXT
+    MODERATOR_TEXT, MODERATION_CONCLUSION_TEXT, PASS_CODE
 from src.constants.transcription import type_of_program_dict
 from src.models import VisitResult, TargetType, UserTask, User, UserTaskStatus
 from src.models.company import Company
@@ -80,6 +80,7 @@ def get_main_reply_keyboard():
             [
                 KeyboardButton(text=SCHEDULE_BTN),
                 KeyboardButton(text=ACTIVITY_MAP_BTN),
+                KeyboardButton(text=PASS_CODE),
             ],
         ],
         resize_keyboard=True
@@ -507,3 +508,11 @@ def remove_markup(text: str) -> str:
     text = re.sub(r'[*`~]', '', text)
     return text
 
+
+def get_cancel_inline_keyboard():
+    builder = InlineKeyboardBuilder()
+    builder.add(InlineKeyboardButton(
+        text=CANCEL_BTN,
+        callback_data="cancel_text_input"
+    ))
+    return builder.as_markup()
