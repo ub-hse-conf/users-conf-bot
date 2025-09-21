@@ -6,7 +6,7 @@ from aiogram.types import Message, BufferedInputFile
 
 
 from src.api import UserClient
-from src.constants.texts import QR_CODE_TEXT, ATTENDED_ACTIVITY
+from src.constants.texts import QR_CODE_TEXT, ATTENDED_ACTIVITY, NO_VISITS
 from src.middlewares.utils import parse_activities, get_emoji_for_activity
 from src.models import TargetType
 
@@ -16,7 +16,7 @@ router = Router()
 
 
 @router.message(F.text == ATTENDED_ACTIVITY)
-@router.message(Command("my_activities"))
+@router.message(Command("activities"))
 async def cmd_attended_activity(message: Message, user_client: UserClient) -> None:
     activity_list = await user_client.get_user_visits(tg_id=message.chat.id)
     sorted_activity = parse_activities(activity_list)
@@ -36,6 +36,9 @@ async def cmd_attended_activity(message: Message, user_client: UserClient) -> No
             emoji = get_emoji_for_activity("COMPANY")
             message_text += f"{emoji} {company.name}\n"
         message_text += "\n"
+
+    if message_text == "":
+        message_text = NO_VISITS
 
     await message.answer(
         text=message_text,

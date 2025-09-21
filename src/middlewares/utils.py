@@ -11,9 +11,10 @@ import re
 from structlog import get_logger
 
 from src.constants.texts import REGISTER_FAIL_BTN, REGISTER_OK_BTN, SCHEDULE_BTN, ACTIVITY_MAP_BTN, \
-    NU_KAK_TAM_S_DENGAMI_BTN, SEND_QR, ATTENDED_ACTIVITY, COMPANY_VISIT, TO_SITE, TASK_LIST
+    NU_KAK_TAM_S_DENGAMI_BTN, SEND_QR, ATTENDED_ACTIVITY, COMPANY_VISIT, TO_SITE, TASK_LIST, activity, lecture, contest, \
+    workshop, company
 from src.constants.transcription import type_of_program_dict
-from src.models import VisitResult, TargetType
+from src.models import VisitResult, TargetType, UserTask
 from src.models.company import Company
 
 
@@ -65,19 +66,33 @@ def get_main_reply_keyboard():
         keyboard=[
             [
                 KeyboardButton(text=SEND_QR),
-                KeyboardButton(text=TASK_LIST)
+            ],
+            [
+                KeyboardButton(text=TASK_LIST),
+                KeyboardButton(text=ATTENDED_ACTIVITY),
+                KeyboardButton(text=NU_KAK_TAM_S_DENGAMI_BTN),
             ],
             [
                 KeyboardButton(text=SCHEDULE_BTN),
                 KeyboardButton(text=ACTIVITY_MAP_BTN),
             ],
-            [
-                KeyboardButton(text=NU_KAK_TAM_S_DENGAMI_BTN),
-                KeyboardButton(text=ATTENDED_ACTIVITY),
-            ]
         ],
         resize_keyboard=True
     )
+
+
+def get_task_keyboard(task_list: list[UserTask]) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    for task in task_list:
+        builder.add(
+            InlineKeyboardButton(
+                text=task.name,
+                callback_data=f"task_{task.name}"
+            )
+        )
+    builder.adjust(1)
+    return builder.as_markup()
+
 
 
 def parse_name(name: str) -> bool:
@@ -136,15 +151,15 @@ def parse_activities(visits: List[VisitResult]) -> dict:
 
 def get_emoji_for_activity(activity_type: str):
     if activity_type == "COMPANY":
-        return "⭐️"
+        return company
     elif activity_type == "WORKSHOP":
-        return "📖"
+        return workshop
     elif activity_type == "CONTEST":
-        return "🏆"
+        return contest
     elif activity_type == "ACTIVITY":
-        return "🏆"
+        return activity
     else:
-        return "📖"
+        return lecture
 
 
 def is_https_url(url: str) -> bool:
