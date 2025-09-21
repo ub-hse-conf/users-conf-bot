@@ -28,3 +28,5 @@ async def ted(callback: CallbackQuery, user_client: UserClient) -> None:
         ))
 
     await callback.answer(VOTE_SENT)
+
+    await callback.message.delete()
