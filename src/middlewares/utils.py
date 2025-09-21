@@ -95,6 +95,7 @@ def get_task_keyboard(task_list: list[UserTask]) -> InlineKeyboardMarkup:
                 callback_data=f"task:{task.id}"
             )
         )
+
     builder.adjust(1)
     return builder.as_markup()
 
