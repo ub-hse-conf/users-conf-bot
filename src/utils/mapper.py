@@ -1,6 +1,6 @@
 from src.models import User, VisitResult, Visitable, TargetType, UserTask, UserTaskStatus, Error, ErrorType, Activity
 from src.models.company import Company
-from src.models.task import UserTaskType
+from src.models.task import UserTaskType, CompletedUserTask
 
 
 def user_from_json(json: dict) -> User:
@@ -32,6 +32,16 @@ def company_info_from_json(json: dict) -> Company:
         siteUrl=json["siteUrl"],
         id=int(json["id"])
     )
+
+
+def completed_task_from_json(json: dict) -> CompletedUserTask:
+    return CompletedUserTask(
+        id=int(json["id"]),
+        userId=int(json["userId"]),
+        taskId=int(json["taskId"]),
+        completeTime=json["completeTime"]
+    )
+
 
 # def visit_result_from_json(json: dict) -> VisitResult:
 #     return VisitResult(

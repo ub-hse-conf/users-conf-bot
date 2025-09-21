@@ -21,3 +21,6 @@ WORKING_MODE = config("WORKING_MODE", cast=WorkingMode)
 
 WEBHOOK_URL = config("WEBHOOK_URL", default=None)
 WEBHOOK_PATH = config("WEBHOOK_PATH", default="/")
+
+BE_REAL_GROUP_ID = config("BE_REAL_GROUP_ID")
+ADDITIONAL_TASKS_GROUP_ID = config("ADDITIONAL_TASKS_GROUP_ID")
