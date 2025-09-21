@@ -21,7 +21,7 @@ class TextInputStates(StatesGroup):
 
 @router.message(F.text == PASS_CODE)
 @router.message(Command("pass_code"))
-async def workshop_word(message: Message, user_client: UserClient, state: FSMContext) -> None:
+async def workshop_word(message: Message, state: FSMContext) -> None:
     await state.set_state(TextInputStates.waiting_for_text)
 
     info_message = await message.answer(
@@ -49,7 +49,7 @@ async def handle_text_input(message: Message, state: FSMContext, user_client: Us
         keyWord=user_text
     ))
 
-    if result and result == "Unavailable activity":
+    if not result:
         await message.answer(
             text=WRONG_SEND
         )

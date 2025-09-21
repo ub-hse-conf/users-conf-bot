@@ -56,6 +56,7 @@ class UserClient(BaseClient):
     async def get_user_qr(self, tg_id: int) -> bytes:
         url = f"/users/{tg_id}/qr"
 
+        client: UserClient
         async with self as client:
             result = await client._get_request(url)
             if result.is_error:
@@ -130,13 +131,14 @@ class UserClient(BaseClient):
         result = await self._post_request_or_error(url, payload)
 
         if isinstance(result, Error):
-            if result.error_type == ErrorType.USER_NOT_FOUND:
+            if result.error_type == ErrorType.ACTIVITY_NOT_FOUND:
                 return None
+
             raise ServerErrorException(f"Error while vote {activity_id}", result)
 
         return vote_from_json(result)
 
-    async def add_keyword(self, keyword: Keyword) -> str | None:
+    async def add_keyword(self, keyword: Keyword) -> bool:
         url = f"/activities/key-word"
 
         payload = {
@@ -144,12 +146,16 @@ class UserClient(BaseClient):
             "keyWord": keyword.keyWord,
         }
 
-        result = await self._post_request_or_error(url, payload)
+        result = await self._post_request(url, payload)
 
-        if isinstance(result, Error):
-            if result.error_type == ErrorType.ACTIVITY_NOT_FOUND:
-                return "Unavailable activity"
-            raise ServerErrorException(f"Error while sending keyword", result)
+        if result.is_error:
+            error = self._parse_error(result.json())
+            if error.error_type == ErrorType.ACTIVITY_NOT_FOUND:
+                return False
+
+            raise ServerErrorException(f"Error while sending keyword", error)
+
+        return True
 
     async def get_all_activities(self) -> List[ActivityRequest] | Error:
         url = f"/activities/"
