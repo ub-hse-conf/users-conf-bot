@@ -4,6 +4,7 @@ from src.api.client.base_client import BaseClient
 from src.exception import ServerErrorException
 from src.models import CreateUserRequest, CreateUserResponse, Error, VisitResult, User, ErrorType, UserTask, Vote, \
     CreateVoteRequest, Activity
+from src.models.activity import ActivityRequest
 from src.models.company import Company
 from src.models.keyword import Keyword
 from src.models.task import CompletedUserTask
@@ -150,7 +151,7 @@ class UserClient(BaseClient):
                 return "Unavailable activity"
             raise ServerErrorException(f"Error while sending keyword", result)
 
-    async def get_all_activities(self) -> List[Activity] | Error:
+    async def get_all_activities(self) -> List[ActivityRequest] | Error:
         url = f"/activities/"
 
         result = await self._get_request_or_error(url)

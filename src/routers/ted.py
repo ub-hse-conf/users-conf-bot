@@ -17,8 +17,8 @@ async def ted(callback: CallbackQuery, user_client: UserClient) -> None:
         answers.append(button[0].text)
 
     params = callback.data.split("|")
-    activity_id = int(params[0])
-    index = int(params[1])
+    activity_id = int(params[1])
+    index = int(params[2])
 
     await user_client.add_user_answer(
         activity_id=activity_id,
