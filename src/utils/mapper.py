@@ -1,7 +1,7 @@
 from typing import List
 
 from src.models import User, VisitResult, Visitable, TargetType, UserTask, UserTaskStatus, Error, ErrorType, Activity, \
-    Vote
+    Vote, Task
 from src.models.activity import ActivityRequest
 from src.models.company import Company
 from src.models.task import UserTaskType, CompletedUserTask
@@ -102,4 +102,16 @@ def activities_from_json(json: dict) -> ActivityRequest:
         location=json["location"],
         id=int(json["id"]),
         hasEvent=bool(json["hasEvent"])
+    )
+
+
+def task_from_json(json: dict) -> Task:
+    return Task(
+        id=int(json["taskId"]),
+        name=json["name"],
+        description=json["description"],
+        points=json["points"],
+        status=json["status"],
+        type=json["type"],
+        duration=json["duration"]
     )

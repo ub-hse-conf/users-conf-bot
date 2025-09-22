@@ -2,6 +2,7 @@ import urllib
 from asyncio import Task
 from datetime import datetime
 from typing import List
+import pymorphy2
 
 from aiogram import Bot
 from aiogram.enums import ParseMode
@@ -528,3 +529,21 @@ def get_cancel_inline_keyboard():
         callback_data="cancel_text_input"
     ))
     return builder.as_markup()
+
+
+def plural(n, forms):
+    """
+    forms: [форма_1, форма_2, форма_5]
+    Например: ["задача", "задачи", "задач"]
+    """
+    n = abs(n) % 100
+    if 11 <= n <= 19:
+        return forms[2]
+
+    n = n % 10
+    if n == 1:
+        return forms[0]
+    elif 2 <= n <= 4:
+        return forms[1]
+    else:
+        return forms[2]
