@@ -86,11 +86,23 @@ class UserClient(BaseClient):
 
         return list(map(user_task_from_json, result))
 
-    async def get_user_task_by_id(self, tg_id: int, task_id: int) -> UserTask:
+    async def get_user_task_by_id(self, tg_id: int, task_id: int) -> UserTask | Error:
         url = f"/users/{tg_id}/tasks/{task_id}"
 
         result = await self._get_request_or_error(url)
         if isinstance(result, Error):
+            if result.error_type == ErrorType.ACTIVITY_NOT_FOUND:
+                return result
+
+            if  result.error_type == ErrorType.VISIT_NOT_FOUND:
+                return result
+
+            if  result.error_type == ErrorType.VISIT_ALREADY_EXISTS:
+                return result
+
+            if  result.error_type == ErrorType.TASK_CANNOT_BE_SUBMITTED:
+                return result
+
             raise ServerErrorException(f"Error while getting user task with id {task_id}", result)
 
         return user_task_from_json(result)
@@ -126,15 +138,14 @@ class UserClient(BaseClient):
         url = f"/tasks/{task_id}/submit/{tg_id}"
         result = await self._post_request_or_error(url)
         if isinstance(result, Error):
-            if result.error_type == ErrorType.USER_NOT_FOUND:
+            if result.error_type == ErrorType.COMPLETEDUSERTASK_ALREADY_EXISTS:
                 return None
-            if result.error_type == ErrorType.USER_NOT_FOUND:
-                return self._parse_error(result.json())
+
             raise ServerErrorException(f"Error while completing task {task_id}", result)
 
         return completed_task_from_json(result)
 
-    async def add_user_answer(self, activity_id: int, request: CreateVoteRequest) -> Vote | Error:
+    async def add_user_answer(self, activity_id: int, request: CreateVoteRequest) -> Vote | None:
         url = f"/activities/{activity_id}/event/answer"
 
         payload = {
@@ -192,26 +203,3 @@ class UserClient(BaseClient):
             raise ServerErrorException(f"Error while get information about all activities", result)
 
         return list(map(activities_from_json, result))
-
-    async def get_task_info(self, task_id: int) -> Task | Error:
-        url = f"/tasks/{task_id}"
-
-        result = await self._get_request_or_error(url)
-
-        if isinstance(result, Error):
-            if result.error_type == ErrorType.ACTIVITY_NOT_FOUND:
-                return  result
-
-            if  result.error_type == ErrorType.VISIT_NOT_FOUND:
-                return  result
-
-            if  result.error_type == ErrorType.VISIT_ALREADY_EXISTS:
-                return  result
-
-            if  result.error_type == ErrorType.TASK_CANNOT_BE_SUBMITTED:
-                return  result
-
-            raise ServerErrorException(f"Error while get information about task by id", result)
-
-
-        return task_from_json(result)

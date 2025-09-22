@@ -21,6 +21,7 @@ from src.middlewares.utils import get_courses_keyboard, get_programs_keyboard, p
     send_company_info, get_task_info, get_cancel_keyboard, detect_content_type, show_preview_and_ask_confirmation, \
     get_file_id, send_to_commission, update_commission_message
 from src.models import CreateUserRequest, ErrorType, TaskStatus, TaskType, UserTaskStatus, Error
+from src.models.task import UserTaskType
 
 router = Router()
 
@@ -90,10 +91,9 @@ async def be_real_start(callback: CallbackQuery, state: FSMContext, user_client:
         task_id = int(callback.data.replace("task:", ""))
 
     task = await user_client.get_user_task_by_id(tg_id=callback.message.chat.id, task_id=task_id)
-    task_info = await user_client.get_task_info(task_id)
 
-    if isinstance(task_info, Error):
-        if task_info.error_type == ErrorType.TASK_CANNOT_BE_SUBMITTED:
+    if isinstance(task, Error):
+        if task.error_type == ErrorType.TASK_CANNOT_BE_SUBMITTED:
             await callback.answer(
                 text=TIME_IS_OVER_MY_SLOW_FRIEND
             )
@@ -105,7 +105,7 @@ async def be_real_start(callback: CallbackQuery, state: FSMContext, user_client:
             await state.clear()
             return
     else:
-        if task_info.type == TaskType.TEMP and task_info.status != TaskStatus.IN_PROCESS:
+        if task.task_type == UserTaskType.BE_REAL and task.status != UserTaskStatus.IN_PROGRESS:
             await callback.answer(
                 text=TIME_IS_OVER_MY_SLOW_FRIEND
             )
@@ -191,8 +191,9 @@ async def handle_confirm_send(
 
     user_account = await user_client.get_user_data(tg_id=callback.message.chat.id)
 
-    task_info = await user_client.get_task_info(task_id)
-    if task_info.is_error:
+    task_info = await user_client.get_user_task_by_id(callback.message.chat.id, task_id)
+
+    if isinstance(task_info, Error):
         if task_info.error_type == ErrorType.TASK_CANNOT_BE_SUBMITTED:
             await callback.message.answer(TASK_ALREADY_SENT)
             await callback.message.delete()
@@ -204,7 +205,7 @@ async def handle_confirm_send(
             return
     else:
 
-        if task_info.type == TaskType.TEMP and task_info.status == TaskStatus.IN_PROCESS:
+        if task_info.task_type == UserTaskType.BE_REAL and task_info.status != UserTaskStatus.IN_PROGRESS:
             if task.status != UserTaskStatus.DONE:
                 await send_to_commission(
                     file_id=file_id,
@@ -220,7 +221,7 @@ async def handle_confirm_send(
                 await callback.message.delete()
                 await state.clear()
                 return
-        elif task_info.type == TaskType.PERMANENT:
+        elif task_info.task_type == UserTaskType.BASIC_TASK:
             if task.status != UserTaskStatus.DONE:
                 await send_to_commission(
                     file_id=file_id,
@@ -304,12 +305,10 @@ async def handle_approve_task(
 
 
     result = await user_client.complete_task(task_id=task_id, tg_id=user_id)
-    if isinstance(result, dict):
-        if result:
-            if result.error_type == ErrorType.COMPLETEDUSERTASK_ALREADY_EXISTS:
-                await callback.message.answer(
-                    text=WRONG_SEND_BE_REAL
-                )
+    if not result:
+        await callback.message.answer(
+            text=WRONG_SEND_BE_REAL
+        )
 
     await callback.answer(TASK_APPROVE_ALERT_TO_ADMIN)
     await bot.send_message(
