@@ -85,5 +85,5 @@ async def handle_non_text_input(message: Message):
 @router.callback_query(F.data == "cancel_text_input")
 async def handle_cancel_text_input(callback: CallbackQuery, state: FSMContext):
     await state.clear()
-    await callback.message.delete()
     await callback.answer(CANCEL_BTN)
+    await callback.message.delete()

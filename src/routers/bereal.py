@@ -14,13 +14,13 @@ from src.constants.texts import HELLO_TEXT, FIO_ERROR_TEXT, PROGRAM_CHANGE_TEXT,
     EMAIL_ERROR_TEXT, RESULT_TEXT, COMMAND_LIST_TEXT, COMPANY_VISIT, BAD_COMPANY_VISIT, USER_ALREADY_EXISTS_TEXT, \
     TASK_GET_ERROR, CONTENT_TYPE_UNSUPPORTED, TASK_GENERAL_REQUIRE, CONTENT_SENT, TASK_REJECTED, \
     AFTER_MODERATION_APPROVED, AFTER_MODERATION_REJECTED, TASK_REJECTED_ALERT_TO_ADMIN, TASK_APPROVE_ALERT_TO_ADMIN, \
-    WRONG_SEND_BE_REAL, TASK_ALREADY_SENT
+    WRONG_SEND_BE_REAL, TASK_ALREADY_SENT, TIME_IS_OVER_MY_SLOW_FRIEND
 from src.constants.transcription import type_of_program_dict
 from src.middlewares.utils import get_courses_keyboard, get_programs_keyboard, parse_name, send_error_message, \
     is_error_message, remove_error_message, get_registration_result_keyboard, parse_email, get_main_reply_keyboard, \
     send_company_info, get_task_info, get_cancel_keyboard, detect_content_type, show_preview_and_ask_confirmation, \
     get_file_id, send_to_commission, update_commission_message
-from src.models import CreateUserRequest, ErrorType
+from src.models import CreateUserRequest, ErrorType, TaskStatus, TaskType
 
 router = Router()
 
@@ -169,31 +169,36 @@ async def handle_confirm_send(
 
     user_account = await user_client.get_user_data(tg_id=callback.message.chat.id)
 
-    commission_message = await send_to_commission(
-        file_id=file_id,
-        content_type=content_type,
-        text_content=text_content,
-        task=task,
-        user_account=user_account,
-        user=callback.from_user,
-        bot=bot
-    )
+    task_info = await user_client.get_task_info(task_id)
+    if task_info.type == TaskType.TEMP and task_info.status == TaskStatus.IN_PROCESS:
+        await send_to_commission(
+            file_id=file_id,
+            content_type=content_type,
+            text_content=text_content,
+            task=task,
+            user_account=user_account,
+            user=callback.from_user,
+            bot=bot
+        )
+    elif task_info.type == TaskType.PERMANENT:
+        await send_to_commission(
+            file_id=file_id,
+            content_type=content_type,
+            text_content=text_content,
+            task=task,
+            user_account=user_account,
+            user=callback.from_user,
+            bot=bot
+        )
+    else:
+        await callback.message.answer(TIME_IS_OVER_MY_SLOW_FRIEND)
+        await callback.message.delete()
 
     await callback.message.answer(CONTENT_SENT)
     await callback.message.delete()
 
     await state.clear()
     await callback.answer(CONTENT_SENT)
-
-
-    # # Редактируем сообщение с предпросмотром
-    # try:
-    #     await callback.message.edit_text(
-    #         "✅ Ваш контент успешно отправлен на модерацию комиссии!",
-    #         reply_markup=None
-    #     )
-    # except:
-    #     await callback.message.answer("✅ Контент отправлен на модерацию!")
 
 
 @router.callback_query(F.data.startswith("change_content:"))
@@ -206,7 +211,7 @@ async def handle_change_content(callback: CallbackQuery, state: FSMContext):
     await state.set_state(TaskStates.waiting_answer)
     await callback.answer("🔄 Можно отправить новый контент")
 
-    info_message= await callback.message.answer(
+    info_message = await callback.message.answer(
         text=TASK_GENERAL_REQUIRE,
         reply_markup=get_cancel_keyboard(task_id),
         parse_mode=ParseMode.HTML
