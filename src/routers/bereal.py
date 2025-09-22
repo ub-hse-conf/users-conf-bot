@@ -151,8 +151,8 @@ async def handle_confirm_send(
     try:
         content_type = data['content_type']
     except Exception:
-        await callback.message.delete()
         await callback.answer(TASK_ALREADY_SENT)
+        await callback.message.delete()
         return
 
     file_id = data['file_id']
