@@ -16,7 +16,7 @@ class ExcludedCommandsFilter:
 
     async def __call__(self, message: Message) -> bool:
         if not message.text or not message.text.startswith('/'):
-            return True
+            return False
 
         command = message.text.split()[0][1:].split('@')[0]
         return command not in self.excluded_commands
