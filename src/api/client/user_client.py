@@ -135,8 +135,9 @@ class UserClient(BaseClient):
         if isinstance(result, Error):
             if result.error_type == ErrorType.ACTIVITY_NOT_FOUND:
                 return None
-            else:
-                return self._parse_error(result.json())
+
+            if result.error_type == ErrorType.VOTE_ALREADY_EXISTS:
+                return None
 
             raise ServerErrorException(f"Error while vote {activity_id}", result)
 
