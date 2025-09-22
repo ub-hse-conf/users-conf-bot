@@ -15,7 +15,7 @@ from src.routers import (start,
                          activity_schedule,
                          bereal,
                          ted,
-                         workshop_word)
+                         workshop_word, conference_start_mailing)
 
 
 def register_routes(dp: Dispatcher):
@@ -31,6 +31,7 @@ def register_routes(dp: Dispatcher):
     dp.include_router(bereal.router)
     dp.include_router(ted.router)
     dp.include_router(workshop_word.router)
+    dp.include_router(conference_start_mailing.router)
 
 
 async def register_commands_info(bot: Bot):
