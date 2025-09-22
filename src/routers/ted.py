@@ -28,12 +28,12 @@ async def ted(callback: CallbackQuery, user_client: UserClient) -> None:
             answer=answers[index]
         ))
 
-    if result:
-        if result.error_type == ErrorType.VOTE_ALREADY_EXISTS:
-            await callback.message.answer(
-                text=VOTE_ERROR
-            )
+    if not result:
+        await callback.message.answer(
+            text=VOTE_ERROR
+        )
 
-    await callback.answer(VOTE_SENT)
+    else:
+        await callback.answer(VOTE_SENT)
 
     await callback.message.delete()
