@@ -43,7 +43,7 @@ async def cmd_attended_activity(message: Message, user_client: UserClient) -> No
         message_text += "\n"
 
     if message_text == "":
-        message_text = NO_VISITS
+        message_text = NO_VISITS + '\n\n'
 
     if user_info.isCompleteConference:
         message_text += CONGRATULATIONS_MESSAGE
