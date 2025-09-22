@@ -2,7 +2,6 @@ import urllib
 from asyncio import Task
 from datetime import datetime
 from typing import List
-import pymorphy2
 
 from aiogram import Bot
 from aiogram.enums import ParseMode
