@@ -183,12 +183,26 @@ class UserClient(BaseClient):
 
         return list(map(activities_from_json, result))
 
-    async def get_task_info(self, task_id: int) -> Task:
+    async def get_task_info(self, task_id: int) -> Task | Error:
         url = f"/tasks/{task_id}"
 
         result = await self._get_request_or_error(url)
 
-        if isinstance(result, Error):
+        if result.is_error:
+            error = self._parse_error(result.json())
+            if error.error_type == ErrorType.ACTIVITY_NOT_FOUND:
+                return error
+
+            if error.error_type == ErrorType.VISIT_NOT_FOUND:
+                return error
+
+            if error.error_type == ErrorType.VISIT_ALREADY_EXISTS:
+                return error
+
+            if error.error_type == ErrorType.TASK_CANNOT_BE_SUBMITTED:
+                return error
+
             raise ServerErrorException(f"Error while get information about task by id", result)
+
 
         return task_from_json(result)
