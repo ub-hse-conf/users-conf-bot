@@ -21,7 +21,7 @@ class UserClient(BaseClient):
         if isinstance(result, Error):
             raise ServerErrorException("Error while getting pageable user ids", result)
 
-        return int(result["nextToken"]), list(map(int, result["ids"]))
+        return int(result["nextToken"]), list(map(int, result["data"]))
 
     async def create_user(self, request: CreateUserRequest) -> CreateUserResponse:
         url = "/users"
