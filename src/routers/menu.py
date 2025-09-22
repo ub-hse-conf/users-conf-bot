@@ -1,13 +1,9 @@
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message
-from aiogram.fsm.context import FSMContext
 
-
-from src.api import UserClient
 from src.constants.texts import COMMAND_LIST_TEXT
 from src.middlewares.utils import get_main_reply_keyboard
-
 
 router = Router()
 

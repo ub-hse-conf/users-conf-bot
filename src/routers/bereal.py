@@ -20,7 +20,7 @@ from src.middlewares.utils import get_courses_keyboard, get_programs_keyboard, p
     is_error_message, remove_error_message, get_registration_result_keyboard, parse_email, get_main_reply_keyboard, \
     send_company_info, get_task_info, get_cancel_keyboard, detect_content_type, show_preview_and_ask_confirmation, \
     get_file_id, send_to_commission, update_commission_message
-from src.models import CreateUserRequest, ErrorType, TaskStatus, TaskType, UserTaskStatus
+from src.models import CreateUserRequest, ErrorType, TaskStatus, TaskType, UserTaskStatus, Error
 
 router = Router()
 
@@ -92,7 +92,7 @@ async def be_real_start(callback: CallbackQuery, state: FSMContext, user_client:
     task = await user_client.get_user_task_by_id(tg_id=callback.message.chat.id, task_id=task_id)
     task_info = await user_client.get_task_info(task_id)
 
-    if task_info.is_error:
+    if isinstance(task_info, Error):
         if task_info.error_type == ErrorType.TASK_CANNOT_BE_SUBMITTED:
             await callback.answer(
                 text=TIME_IS_OVER_MY_SLOW_FRIEND
