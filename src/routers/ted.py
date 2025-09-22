@@ -24,7 +24,7 @@ async def ted(callback: CallbackQuery, user_client: UserClient) -> None:
     result = await user_client.add_user_answer(
         activity_id=activity_id,
         request=CreateVoteRequest(
-            userTgId=callback.message.from_user.id,
+            userTgId=callback.message.chat.id,
             answer=answers[index]
         ))
 
