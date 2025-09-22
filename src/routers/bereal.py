@@ -90,6 +90,15 @@ async def be_real_start(callback: CallbackQuery, state: FSMContext, user_client:
         task_id = int(callback.data.replace("task:", ""))
 
     task = await user_client.get_user_task_by_id(tg_id=callback.message.chat.id, task_id=task_id)
+    task_info = await user_client.get_task_info(task_id)
+
+    if task_info.type == TaskType.TEMP and task_info.status != TaskStatus.IN_PROCESS:
+        await callback.answer(
+            text=TIME_IS_OVER_MY_SLOW_FRIEND
+        )
+        await callback.message.delete()
+        await state.clear()
+        return
 
     if not task:
         await callback.answer(
@@ -193,6 +202,8 @@ async def handle_confirm_send(
     else:
         await callback.message.answer(TIME_IS_OVER_MY_SLOW_FRIEND)
         await callback.message.delete()
+        await state.clear()
+        return
 
     await callback.message.answer(CONTENT_SENT)
     await callback.message.delete()
@@ -253,6 +264,7 @@ async def handle_approve_task(
             parse_mode="HTML",
             reply_markup=None
         )
+
 
     result = await user_client.complete_task(task_id=task_id, tg_id=user_id)
     if isinstance(result, dict):
