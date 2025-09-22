@@ -13,13 +13,14 @@ from src.api import UserClient
 from src.constants.texts import HELLO_TEXT, FIO_ERROR_TEXT, PROGRAM_CHANGE_TEXT, COURSE_CHANGE_TEXT, EMAIL_CHANGE_TEXT, \
     EMAIL_ERROR_TEXT, RESULT_TEXT, COMMAND_LIST_TEXT, COMPANY_VISIT, BAD_COMPANY_VISIT, USER_ALREADY_EXISTS_TEXT, \
     TASK_GET_ERROR, CONTENT_TYPE_UNSUPPORTED, TASK_GENERAL_REQUIRE, CONTENT_SENT, TASK_REJECTED, \
-    AFTER_MODERATION_APPROVED, AFTER_MODERATION_REJECTED, TASK_REJECTED_ALERT_TO_ADMIN, TASK_APPROVE_ALERT_TO_ADMIN
+    AFTER_MODERATION_APPROVED, AFTER_MODERATION_REJECTED, TASK_REJECTED_ALERT_TO_ADMIN, TASK_APPROVE_ALERT_TO_ADMIN, \
+    WRONG_SEND_BE_REAL
 from src.constants.transcription import type_of_program_dict
 from src.middlewares.utils import get_courses_keyboard, get_programs_keyboard, parse_name, send_error_message, \
     is_error_message, remove_error_message, get_registration_result_keyboard, parse_email, get_main_reply_keyboard, \
     send_company_info, get_task_info, get_cancel_keyboard, detect_content_type, show_preview_and_ask_confirmation, \
     get_file_id, send_to_commission, update_commission_message
-from src.models import CreateUserRequest
+from src.models import CreateUserRequest, ErrorType
 
 router = Router()
 
@@ -240,7 +241,14 @@ async def handle_approve_task(
             reply_markup=None
         )
 
-    await user_client.complete_task(task_id=task_id, tg_id=user_id)
+    result = await user_client.complete_task(task_id=task_id, tg_id=user_id)
+    if result:
+        if result.error_type == ErrorType.COMPLETEDUSERTASK_ALREADY_EXISTS:
+            await callback.message.answer(
+                text=WRONG_SEND_BE_REAL
+            )
+
+
     await callback.answer(TASK_APPROVE_ALERT_TO_ADMIN)
     await bot.send_message(
         chat_id=user_id,
@@ -258,7 +266,6 @@ async def handle_reject_task(
     task_id = int(callback.data.split(":")[1])
     user_id = int(callback.data.split(":")[2])
     task = await user_client.get_user_task_by_id(tg_id=user_id, task_id=task_id)
-
 
     if callback.message.caption:
         # Это медиа-сообщение с подписью
