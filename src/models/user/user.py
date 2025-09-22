@@ -11,3 +11,4 @@ class User:
     program: str
     role: UserRole
     email: str | None
+    isCompleteConference: bool
