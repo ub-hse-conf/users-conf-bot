@@ -138,7 +138,7 @@ class UserClient(BaseClient):
 
         return vote_from_json(result)
 
-    async def add_keyword(self, keyword: Keyword) -> bool:
+    async def add_keyword(self, keyword: Keyword) -> None | Error:
         url = f"/activities/key-word"
 
         payload = {
@@ -154,11 +154,17 @@ class UserClient(BaseClient):
             if result.is_error:
                 error = self._parse_error(result.json())
                 if error.error_type == ErrorType.ACTIVITY_NOT_FOUND:
-                    return False
+                    return error
+
+                if error.error_type == ErrorType.VISIT_NOT_FOUND:
+                    return error
+
+                if error.error_type == ErrorType.VISIT_ALREADY_EXISTS:
+                    return error
 
                 raise ServerErrorException(f"Error while sending keyword", error)
 
-            return True
+            return None
 
     async def get_all_activities(self) -> List[ActivityRequest] | Error:
         url = f"/activities/"
