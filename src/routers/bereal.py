@@ -113,7 +113,7 @@ async def be_real_start(callback: CallbackQuery, state: FSMContext, user_client:
             await state.clear()
             return
 
-        if not task:
+        if isinstance(task, Error):
             await callback.answer(
                 text=TASK_GET_ERROR,
                 show_alert=True
@@ -191,10 +191,8 @@ async def handle_confirm_send(
 
     user_account = await user_client.get_user_data(tg_id=callback.message.chat.id)
 
-    task_info = await user_client.get_user_task_by_id(callback.message.chat.id, task_id)
-
-    if isinstance(task_info, Error):
-        if task_info.error_type == ErrorType.TASK_CANNOT_BE_SUBMITTED:
+    if isinstance(task, Error):
+        if task.error_type == ErrorType.TASK_CANNOT_BE_SUBMITTED:
             await callback.message.answer(TASK_ALREADY_SENT)
             await callback.message.delete()
             await state.clear()
@@ -205,7 +203,7 @@ async def handle_confirm_send(
             return
     else:
 
-        if task_info.task_type == UserTaskType.BE_REAL and task_info.status != UserTaskStatus.IN_PROGRESS:
+        if task.task_type == UserTaskType.BE_REAL:
             if task.status != UserTaskStatus.DONE:
                 await send_to_commission(
                     file_id=file_id,
@@ -221,7 +219,7 @@ async def handle_confirm_send(
                 await callback.message.delete()
                 await state.clear()
                 return
-        elif task_info.task_type == UserTaskType.BASIC_TASK:
+        elif task.task_type == UserTaskType.BASIC_TASK:
             if task.status != UserTaskStatus.DONE:
                 await send_to_commission(
                     file_id=file_id,
