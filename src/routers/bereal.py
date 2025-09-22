@@ -20,7 +20,7 @@ from src.middlewares.utils import get_courses_keyboard, get_programs_keyboard, p
     is_error_message, remove_error_message, get_registration_result_keyboard, parse_email, get_main_reply_keyboard, \
     send_company_info, get_task_info, get_cancel_keyboard, detect_content_type, show_preview_and_ask_confirmation, \
     get_file_id, send_to_commission, update_commission_message
-from src.models import CreateUserRequest, ErrorType, TaskStatus, TaskType
+from src.models import CreateUserRequest, ErrorType, TaskStatus, TaskType, UserTaskStatus
 
 router = Router()
 
@@ -167,7 +167,6 @@ async def handle_confirm_send(
     file_id = data['file_id']
     text_content = data['text_content']
 
-
     parts = callback.data.split(":")
     task_id = int(parts[1])
 
@@ -180,25 +179,37 @@ async def handle_confirm_send(
 
     task_info = await user_client.get_task_info(task_id)
     if task_info.type == TaskType.TEMP and task_info.status == TaskStatus.IN_PROCESS:
-        await send_to_commission(
-            file_id=file_id,
-            content_type=content_type,
-            text_content=text_content,
-            task=task,
-            user_account=user_account,
-            user=callback.from_user,
-            bot=bot
-        )
+        if task.status != UserTaskStatus.DONE:
+            await send_to_commission(
+                file_id=file_id,
+                content_type=content_type,
+                text_content=text_content,
+                task=task,
+                user_account=user_account,
+                user=callback.from_user,
+                bot=bot
+            )
+        else:
+            await callback.message.answer(TASK_ALREADY_SENT)
+            await callback.message.delete()
+            await state.clear()
+            return
     elif task_info.type == TaskType.PERMANENT:
-        await send_to_commission(
-            file_id=file_id,
-            content_type=content_type,
-            text_content=text_content,
-            task=task,
-            user_account=user_account,
-            user=callback.from_user,
-            bot=bot
-        )
+        if task.status != UserTaskStatus.DONE:
+            await send_to_commission(
+                file_id=file_id,
+                content_type=content_type,
+                text_content=text_content,
+                task=task,
+                user_account=user_account,
+                user=callback.from_user,
+                bot=bot
+            )
+        else:
+            await callback.message.answer(TASK_ALREADY_SENT)
+            await callback.message.delete()
+            await state.clear()
+            return
     else:
         await callback.message.answer(TIME_IS_OVER_MY_SLOW_FRIEND)
         await callback.message.delete()
