@@ -92,46 +92,60 @@ async def be_real_start(callback: CallbackQuery, state: FSMContext, user_client:
     task = await user_client.get_user_task_by_id(tg_id=callback.message.chat.id, task_id=task_id)
     task_info = await user_client.get_task_info(task_id)
 
-    if task_info.type == TaskType.TEMP and task_info.status != TaskStatus.IN_PROCESS:
-        await callback.answer(
-            text=TIME_IS_OVER_MY_SLOW_FRIEND
-        )
-        await callback.message.delete()
-        await state.clear()
-        return
+    if task_info.is_error:
+        if task_info.error_type == ErrorType.TASK_CANNOT_BE_SUBMITTED:
+            await callback.answer(
+                text=TIME_IS_OVER_MY_SLOW_FRIEND
+            )
+            await callback.message.delete()
+            await state.clear()
+            return
+        else:
+            await callback.message.delete()
+            await state.clear()
+            return
+    else:
+        if task_info.type == TaskType.TEMP and task_info.status != TaskStatus.IN_PROCESS:
+            await callback.answer(
+                text=TIME_IS_OVER_MY_SLOW_FRIEND
+            )
+            await callback.message.delete()
+            await state.clear()
+            return
 
-    if not task:
-        await callback.answer(
-            text=TASK_GET_ERROR,
-            show_alert=True
-        )
-        return
+        if not task:
+            await callback.answer(
+                text=TASK_GET_ERROR,
+                show_alert=True
+            )
+            return
 
-    if "опрос" in task.description:
+        if "опрос" in task.description:
+            text = get_task_info(task)
+            await callback.message.answer(
+                text=text,
+                parse_mode=ParseMode.HTML
+            )
+            return
+
+        await state.update_data(
+            task_id=task.id,
+            task_description=task.description,
+        )
+
+        await state.set_state(TaskStates.waiting_answer)
+
         text = get_task_info(task)
-        await callback.message.answer(
+        await callback.message.delete()
+        info_message = await callback.message.answer(
             text=text,
+            reply_markup=get_cancel_keyboard(task.id),
             parse_mode=ParseMode.HTML
         )
-        return
 
-    await state.update_data(
-        task_id=task.id,
-        task_description=task.description,
-    )
-
-    await state.set_state(TaskStates.waiting_answer)
+        await state.update_data(info_message_id=info_message.message_id)
 
 
-    text = get_task_info(task)
-    await callback.message.delete()
-    info_message = await callback.message.answer(
-        text=text,
-        reply_markup=get_cancel_keyboard(task.id),
-        parse_mode=ParseMode.HTML
-    )
-
-    await state.update_data(info_message_id=info_message.message_id)
 
 
 @router.callback_query(F.data.startswith("cancel_send:"))
@@ -178,49 +192,61 @@ async def handle_confirm_send(
     user_account = await user_client.get_user_data(tg_id=callback.message.chat.id)
 
     task_info = await user_client.get_task_info(task_id)
-    if task_info.type == TaskType.TEMP and task_info.status == TaskStatus.IN_PROCESS:
-        if task.status != UserTaskStatus.DONE:
-            await send_to_commission(
-                file_id=file_id,
-                content_type=content_type,
-                text_content=text_content,
-                task=task,
-                user_account=user_account,
-                user=callback.from_user,
-                bot=bot
-            )
-        else:
+    if task_info.is_error:
+        if task_info.error_type == ErrorType.TASK_CANNOT_BE_SUBMITTED:
             await callback.message.answer(TASK_ALREADY_SENT)
             await callback.message.delete()
             await state.clear()
             return
-    elif task_info.type == TaskType.PERMANENT:
-        if task.status != UserTaskStatus.DONE:
-            await send_to_commission(
-                file_id=file_id,
-                content_type=content_type,
-                text_content=text_content,
-                task=task,
-                user_account=user_account,
-                user=callback.from_user,
-                bot=bot
-            )
         else:
-            await callback.message.answer(TASK_ALREADY_SENT)
             await callback.message.delete()
             await state.clear()
             return
     else:
-        await callback.message.answer(TIME_IS_OVER_MY_SLOW_FRIEND)
+
+        if task_info.type == TaskType.TEMP and task_info.status == TaskStatus.IN_PROCESS:
+            if task.status != UserTaskStatus.DONE:
+                await send_to_commission(
+                    file_id=file_id,
+                    content_type=content_type,
+                    text_content=text_content,
+                    task=task,
+                    user_account=user_account,
+                    user=callback.from_user,
+                    bot=bot
+                )
+            else:
+                await callback.message.answer(TASK_ALREADY_SENT)
+                await callback.message.delete()
+                await state.clear()
+                return
+        elif task_info.type == TaskType.PERMANENT:
+            if task.status != UserTaskStatus.DONE:
+                await send_to_commission(
+                    file_id=file_id,
+                    content_type=content_type,
+                    text_content=text_content,
+                    task=task,
+                    user_account=user_account,
+                    user=callback.from_user,
+                    bot=bot
+                )
+            else:
+                await callback.message.answer(TASK_ALREADY_SENT)
+                await callback.message.delete()
+                await state.clear()
+                return
+        else:
+            await callback.message.answer(TIME_IS_OVER_MY_SLOW_FRIEND)
+            await callback.message.delete()
+            await state.clear()
+            return
+
+        await callback.message.answer(CONTENT_SENT)
         await callback.message.delete()
+
         await state.clear()
-        return
-
-    await callback.message.answer(CONTENT_SENT)
-    await callback.message.delete()
-
-    await state.clear()
-    await callback.answer(CONTENT_SENT)
+        await callback.answer(CONTENT_SENT)
 
 
 @router.callback_query(F.data.startswith("change_content:"))
