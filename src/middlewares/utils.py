@@ -75,13 +75,13 @@ def get_main_reply_keyboard():
             ],
             [
                 KeyboardButton(text=TASK_LIST),
+                KeyboardButton(text=PASS_CODE),
                 KeyboardButton(text=ATTENDED_ACTIVITY),
-                KeyboardButton(text=NU_KAK_TAM_S_DENGAMI_BTN),
             ],
             [
                 KeyboardButton(text=SCHEDULE_BTN),
                 KeyboardButton(text=ACTIVITY_MAP_BTN),
-                KeyboardButton(text=PASS_CODE),
+                KeyboardButton(text=NU_KAK_TAM_S_DENGAMI_BTN),
             ],
         ],
         resize_keyboard=True

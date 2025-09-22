@@ -32,7 +32,7 @@ async def cmd_tasks(message: Message, user_client: UserClient) -> None:
                 is_be_real = True
 
         if is_be_real:
-            text += f"\n\n{BE_REAL_ATTENTION}"
+            text += f"\n\n{BE_REAL_ATTENTION} "
         await message.answer(
             text=text,
             reply_markup=keyboard,
