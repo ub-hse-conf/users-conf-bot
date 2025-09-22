@@ -1,17 +1,15 @@
 from typing import List
 
-from anyio import TaskInfo
-
 from src.api.client.base_client import BaseClient
 from src.exception import ServerErrorException
 from src.models import CreateUserRequest, CreateUserResponse, Error, VisitResult, User, ErrorType, UserTask, Vote, \
-    CreateVoteRequest, Activity, Task
+    CreateVoteRequest
 from src.models.activity import ActivityRequest
 from src.models.company import Company
 from src.models.keyword import Keyword
 from src.models.task import CompletedUserTask
 from src.utils.mapper import user_from_json, visit_result_from_json, user_task_from_json, parse_error, \
-    company_info_from_json, completed_task_from_json, vote_from_json, activities_from_json, task_from_json
+    company_info_from_json, completed_task_from_json, vote_from_json, activities_from_json
 
 
 class UserClient(BaseClient):
@@ -23,7 +21,7 @@ class UserClient(BaseClient):
         if isinstance(result, Error):
             raise ServerErrorException("Error while getting pageable user ids", result)
 
-        return int(result["token"]), list(map(int, result["ids"]))
+        return int(result["nextToken"]), list(map(int, result["ids"]))
 
     async def create_user(self, request: CreateUserRequest) -> CreateUserResponse:
         url = "/users"
