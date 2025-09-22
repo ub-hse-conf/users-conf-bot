@@ -107,7 +107,7 @@ def activities_from_json(json: dict) -> ActivityRequest:
 
 def task_from_json(json: dict) -> Task:
     return Task(
-        id=int(json["taskId"]),
+        id=int(json["id"]),
         name=json["name"],
         description=json["description"],
         points=json["points"],
