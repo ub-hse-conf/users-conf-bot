@@ -110,17 +110,19 @@ class UserClient(BaseClient):
 
         return company_info_from_json(result)
 
-    async def complete_task(self, task_id: int, tg_id: int) -> CompletedUserTask | None:
+    async def complete_task(self, task_id: int, tg_id: int) -> CompletedUserTask | Error | None:
         url = f"/tasks/{task_id}/submit/{tg_id}"
         result = await self._post_request_or_error(url)
         if isinstance(result, Error):
             if result.error_type == ErrorType.USER_NOT_FOUND:
                 return None
+            if result.error_type == ErrorType.USER_NOT_FOUND:
+                return self._parse_error(result.json())
             raise ServerErrorException(f"Error while completing task {task_id}", result)
 
         return completed_task_from_json(result)
 
-    async def add_user_answer(self, activity_id: int, request: CreateVoteRequest) -> Vote | None:
+    async def add_user_answer(self, activity_id: int, request: CreateVoteRequest) -> Vote | Error:
         url = f"/activities/{activity_id}/event/answer"
 
         payload = {
@@ -133,6 +135,8 @@ class UserClient(BaseClient):
         if isinstance(result, Error):
             if result.error_type == ErrorType.ACTIVITY_NOT_FOUND:
                 return None
+            else:
+                return self._parse_error(result.json())
 
             raise ServerErrorException(f"Error while vote {activity_id}", result)
 
