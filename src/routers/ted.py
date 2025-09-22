@@ -1,10 +1,11 @@
 from aiogram import Router
 from aiogram import F
-from aiogram.types import CallbackQuery
+from aiogram.filters import Command
+from aiogram.types import CallbackQuery, Message
 
 from src.api import UserClient
-from src.constants.texts import VOTE_SENT
-from src.models import CreateVoteRequest
+from src.constants.texts import VOTE_SENT, VOTE_ERROR
+from src.models import CreateVoteRequest, ErrorType
 
 router = Router()
 
@@ -20,12 +21,18 @@ async def ted(callback: CallbackQuery, user_client: UserClient) -> None:
     activity_id = int(params[1])
     index = int(params[2])
 
-    await user_client.add_user_answer(
+    result = await user_client.add_user_answer(
         activity_id=activity_id,
         request=CreateVoteRequest(
             userTgId=callback.message.from_user.id,
             answer=answers[index]
         ))
+
+    if result:
+        if result.error_type == ErrorType.VOTE_ALREADY_EXISTS:
+            await callback.message.answer(
+                text=VOTE_ERROR
+            )
 
     await callback.answer(VOTE_SENT)
 

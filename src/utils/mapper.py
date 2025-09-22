@@ -85,7 +85,7 @@ def parse_error(json: dict) -> Error:
 
 def vote_from_json(json: dict) -> Vote:
     return Vote(
-        id=int(json["voteId"]),
+        id=int(json["id"]),
         userId=int(json["userId"]),
         answer=json["answer"],
         eventId=json["eventId"]

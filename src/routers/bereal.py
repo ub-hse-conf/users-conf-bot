@@ -14,7 +14,7 @@ from src.constants.texts import HELLO_TEXT, FIO_ERROR_TEXT, PROGRAM_CHANGE_TEXT,
     EMAIL_ERROR_TEXT, RESULT_TEXT, COMMAND_LIST_TEXT, COMPANY_VISIT, BAD_COMPANY_VISIT, USER_ALREADY_EXISTS_TEXT, \
     TASK_GET_ERROR, CONTENT_TYPE_UNSUPPORTED, TASK_GENERAL_REQUIRE, CONTENT_SENT, TASK_REJECTED, \
     AFTER_MODERATION_APPROVED, AFTER_MODERATION_REJECTED, TASK_REJECTED_ALERT_TO_ADMIN, TASK_APPROVE_ALERT_TO_ADMIN, \
-    WRONG_SEND_BE_REAL
+    WRONG_SEND_BE_REAL, TASK_ALREADY_SENT
 from src.constants.transcription import type_of_program_dict
 from src.middlewares.utils import get_courses_keyboard, get_programs_keyboard, parse_name, send_error_message, \
     is_error_message, remove_error_message, get_registration_result_keyboard, parse_email, get_main_reply_keyboard, \
@@ -69,13 +69,15 @@ async def validate_answer(message: Message, state: FSMContext, user_client: User
             get_logger().error("State 'name' exception", exc_info=e)
     await message.delete()
 
-    await show_preview_and_ask_confirmation(
+    message_info = await show_preview_and_ask_confirmation(
         message=message,
         content_type=content_type,
         text_content=text_content,
         task=task,
         file_id=file_id
     )
+
+    await state.update_data(preview_message_id=message_info.message_id)
 
 
 @router.callback_query(F.data.startswith("be_real_start:"))
@@ -146,7 +148,13 @@ async def handle_confirm_send(
         user_client: UserClient
 ):
     data = await state.get_data()
-    content_type = data['content_type']
+    try:
+        content_type = data['content_type']
+    except Exception:
+        await callback.message.delete()
+        await callback.answer(TASK_ALREADY_SENT)
+        return
+
     file_id = data['file_id']
     text_content = data['text_content']
 
@@ -242,12 +250,12 @@ async def handle_approve_task(
         )
 
     result = await user_client.complete_task(task_id=task_id, tg_id=user_id)
-    if result:
-        if result.error_type == ErrorType.COMPLETEDUSERTASK_ALREADY_EXISTS:
-            await callback.message.answer(
-                text=WRONG_SEND_BE_REAL
-            )
-
+    if isinstance(result, dict):
+        if result:
+            if result.error_type == ErrorType.COMPLETEDUSERTASK_ALREADY_EXISTS:
+                await callback.message.answer(
+                    text=WRONG_SEND_BE_REAL
+                )
 
     await callback.answer(TASK_APPROVE_ALERT_TO_ADMIN)
     await bot.send_message(

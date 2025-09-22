@@ -210,10 +210,11 @@ async def show_preview_and_ask_confirmation(message: Message,
                                             task: UserTask):
 
     keyboard = get_confirmation_keyboard(task.id)
+    message_id: Message
 
     # Отправляем предпросмотр в зависимости от типа контента
     if content_type == "photo":
-        await message.answer_photo(
+        message_id = await message.answer_photo(
             photo=file_id,
             caption=PREVIEW_TEXT.format(task_name=task.name, task_description=task.description),
             reply_markup=keyboard
@@ -221,10 +222,10 @@ async def show_preview_and_ask_confirmation(message: Message,
 
     elif content_type == "text":
         full_text = f"{PREVIEW_TEXT.format(task_name=task.name, task_description=task.description)}\n\n{text_content}"
-        await message.answer(text=full_text, reply_markup=keyboard)
+        message_id = await message.answer(text=full_text, reply_markup=keyboard)
 
     elif content_type == "video":
-        await message.answer_video(
+        message_id = await message.answer_video(
             video=file_id,
             caption=PREVIEW_TEXT.format(task_name=task.name, task_description=task.description),
             reply_markup=keyboard
@@ -234,17 +235,17 @@ async def show_preview_and_ask_confirmation(message: Message,
         text_msg = await message.answer(
             text=PREVIEW_TEXT.format(task_name=task.name, task_description=task.description),
             reply_markup=keyboard)
-        await message.answer_video_note(video_note=file_id)
+        message_id = await message.answer_video_note(video_note=file_id)
 
     elif content_type == "document":
-        await message.answer_document(
+        message_id = await message.answer_document(
             document=file_id,
             caption=PREVIEW_TEXT.format(task_name=task.name, task_description=task.description),
             reply_markup=keyboard
         )
 
     elif content_type == "audio":
-        await message.answer_audio(
+        message_id = await message.answer_audio(
             audio=file_id,
             caption=PREVIEW_TEXT.format(task_name=task.name, task_description=task.description),
             reply_markup=keyboard
@@ -255,7 +256,8 @@ async def show_preview_and_ask_confirmation(message: Message,
             text=PREVIEW_TEXT.format(task_name=task.name, task_description=task.description),
             reply_markup=keyboard)
 
-        await message.answer_voice(voice=file_id)
+        message_id = await message.answer_voice(voice=file_id)
+    return message_id
 
 
 def get_content_type_name(content_type: str) -> str:
