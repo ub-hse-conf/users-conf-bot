@@ -13,7 +13,7 @@ from src.api import UserClient
 from src.constants.texts import HELLO_TEXT, FIO_ERROR_TEXT, PROGRAM_CHANGE_TEXT, COURSE_CHANGE_TEXT, EMAIL_CHANGE_TEXT, \
     EMAIL_ERROR_TEXT, RESULT_TEXT, COMMAND_LIST_TEXT, COMPANY_VISIT, BAD_COMPANY_VISIT, USER_ALREADY_EXISTS_TEXT, \
     TASK_GET_ERROR, CONTENT_TYPE_UNSUPPORTED, TASK_GENERAL_REQUIRE, CONTENT_SENT, TASK_REJECTED, \
-    AFTER_MODERATION_APPROVED, AFTER_MODERATION_REJECTED
+    AFTER_MODERATION_APPROVED, AFTER_MODERATION_REJECTED, TASK_REJECTED_ALERT_TO_ADMIN, TASK_APPROVE_ALERT_TO_ADMIN
 from src.constants.transcription import type_of_program_dict
 from src.middlewares.utils import get_courses_keyboard, get_programs_keyboard, parse_name, send_error_message, \
     is_error_message, remove_error_message, get_registration_result_keyboard, parse_email, get_main_reply_keyboard, \
@@ -134,7 +134,7 @@ async def be_real_cancel(callback: CallbackQuery, state: FSMContext, user_client
 
     await state.clear()
     await callback.message.delete()
-    await callback.message.answer(TASK_REJECTED)
+    await callback.answer(TASK_REJECTED)
 
 
 @router.callback_query(F.data.startswith("confirm_send:"))
@@ -241,7 +241,7 @@ async def handle_approve_task(
         )
 
     await user_client.complete_task(task_id=task_id, tg_id=user_id)
-    await callback.answer("✅ Задача одобрена!")
+    await callback.answer(TASK_APPROVE_ALERT_TO_ADMIN)
     await bot.send_message(
         chat_id=user_id,
         text=AFTER_MODERATION_APPROVED.format(
@@ -287,7 +287,7 @@ async def handle_reject_task(
             reply_markup=None
         )
 
-    await callback.answer("❌ Задача отклонена!")
+    await callback.answer(TASK_REJECTED_ALERT_TO_ADMIN)
 
     await bot.send_message(
         chat_id=user_id,

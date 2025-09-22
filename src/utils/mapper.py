@@ -14,7 +14,8 @@ def user_from_json(json: dict) -> User:
         email=json["email"],
         course=int(json["course"]),
         program=json["program"],
-        role=json["role"]
+        role=json["role"],
+        isCompleteConference=json["isCompleteConference"]
     )
 
 

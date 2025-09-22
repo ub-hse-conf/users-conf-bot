@@ -21,6 +21,7 @@ from src.constants.texts import REGISTER_FAIL_BTN, REGISTER_OK_BTN, SCHEDULE_BTN
 from src.constants.transcription import type_of_program_dict
 from src.models import VisitResult, TargetType, UserTask, User, UserTaskStatus
 from src.models.company import Company
+from src.models.task import UserTaskType
 
 
 async def send_message(user_id: int, update: Update, text: str):
@@ -90,12 +91,21 @@ def get_main_reply_keyboard():
 def get_task_keyboard(task_list: list[UserTask]) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     for task in task_list:
-        builder.add(
-            InlineKeyboardButton(
-                text=task.name,
-                callback_data=f"task:{task.id}"
+        if task.task_type == UserTaskType.BE_REAL:
+            builder.add(
+                InlineKeyboardButton(
+                    text="BE REAL!" + task.name,
+                    callback_data=f"task:{task.id}"
+                )
             )
-        )
+        else:
+            builder.add(
+                InlineKeyboardButton(
+                    text=task.name,
+                    callback_data=f"task:{task.id}"
+                )
+            )
+
 
     builder.adjust(1)
     return builder.as_markup()
@@ -350,7 +360,7 @@ async def send_to_commission(file_id: str,
                              user: AIOUser,
                              bot: Bot) -> Message:
 
-    chat_id = BE_REAL_GROUP_ID if task.task_type == "BE_REAL" else ADDITIONAL_TASKS_GROUP_ID
+    chat_id = BE_REAL_GROUP_ID if task.task_type == UserTaskType.BE_REAL else ADDITIONAL_TASKS_GROUP_ID
 
     keyboard = InlineKeyboardBuilder()
     keyboard.row(
