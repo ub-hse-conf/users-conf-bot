@@ -28,10 +28,6 @@ async def start_conference(message: Message, user_client: UserClient):
 
 async def process_users(bot, users):
     for user in users:
-        if user != _melowetty_id:
-            get_logger().info(f"Skip user {user}")
-            continue
-
         get_logger().info(f"Process user {user}")
         await bot.send_message(user, "*Доброе утро! ☀️*\n\n"
                                "До конференции остался один час, очень ждём тебя! А уже сейчас ты можешь изучить, что будет на конференции 😉",
