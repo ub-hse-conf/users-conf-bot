@@ -211,16 +211,17 @@ async def register_end(callback: CallbackQuery, state: FSMContext, user_client: 
             show_alert=False
         )
         await state.clear()
-        # await callback.message.answer(
-        #     text=COMMAND_LIST_TEXT,
-        #     reply_markup=get_main_reply_keyboard()
-        # )
-        # await callback.message.answer(
-        #     text=GIFTS_MESSAGE
-        # )
-        # await callback.message.answer(
-        #     text=HELP_MESSAGE
-        # )
+
+        await callback.message.answer(
+            text=COMMAND_LIST_TEXT,
+            reply_markup=get_main_reply_keyboard()
+        )
+        await callback.message.answer(
+            text=GIFTS_MESSAGE
+        )
+        await callback.message.answer(
+            text=HELP_MESSAGE
+        )
 
     else:
         await state.clear()

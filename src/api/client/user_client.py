@@ -15,6 +15,16 @@ from src.utils.mapper import user_from_json, visit_result_from_json, user_task_f
 
 
 class UserClient(BaseClient):
+    async def get_pageable_user_ids(self, token: int = 0) -> tuple[int, List[int]]:
+        url = f"/users?token={token}&size=500"
+
+        result = await self._get_request_or_error(url)
+
+        if isinstance(result, Error):
+            raise ServerErrorException("Error while getting pageable user ids", result)
+
+        return int(result["token"]), list(map(int, result["ids"]))
+
     async def create_user(self, request: CreateUserRequest) -> CreateUserResponse:
         url = "/users"
 
@@ -188,19 +198,18 @@ class UserClient(BaseClient):
 
         result = await self._get_request_or_error(url)
 
-        if result.is_error:
-            error = self._parse_error(result.json())
-            if error.error_type == ErrorType.ACTIVITY_NOT_FOUND:
-                return error
+        if isinstance(result, Error):
+            if result.error_type == ErrorType.ACTIVITY_NOT_FOUND:
+                return  result
 
-            if error.error_type == ErrorType.VISIT_NOT_FOUND:
-                return error
+            if  result.error_type == ErrorType.VISIT_NOT_FOUND:
+                return  result
 
-            if error.error_type == ErrorType.VISIT_ALREADY_EXISTS:
-                return error
+            if  result.error_type == ErrorType.VISIT_ALREADY_EXISTS:
+                return  result
 
-            if error.error_type == ErrorType.TASK_CANNOT_BE_SUBMITTED:
-                return error
+            if  result.error_type == ErrorType.TASK_CANNOT_BE_SUBMITTED:
+                return  result
 
             raise ServerErrorException(f"Error while get information about task by id", result)
 
