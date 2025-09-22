@@ -1,15 +1,15 @@
-from aiogram import Router, Bot
 from aiogram import F
+from aiogram import Router, Bot
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery, InlineKeyboardMarkup
+from aiogram.types import Message, CallbackQuery
 
 from src.api import UserClient
-from src.constants.texts import VOTE_SENT, PASS_CODE, CANCEL_BTN, PASS_CODE_WORD, WORD_SENT, PASS_CORRECT_WORD, \
-    WRONG_SEND
+from src.constants.texts import PASS_CODE, CANCEL_BTN, PASS_CODE_WORD, WORD_SENT, PASS_CORRECT_WORD, \
+    WRONG_SEND, WRONG_SEND_NO_VISIT
 from src.middlewares.utils import get_cancel_inline_keyboard
-from src.models import CreateVoteRequest
+from src.models import ErrorType
 from src.models.keyword import Keyword
 
 router = Router()
@@ -49,10 +49,21 @@ async def handle_text_input(message: Message, state: FSMContext, user_client: Us
         keyWord=user_text
     ))
 
-    if not result:
-        await message.answer(
-            text=WRONG_SEND
-        )
+    if result:
+        if result.error_type == ErrorType.VISIT_NOT_FOUND:
+            await message.answer(
+                text=WRONG_SEND_NO_VISIT
+            )
+
+        elif result.error_type == ErrorType.VISIT_ALREADY_EXISTS:
+            await message.answer(
+                text=WRONG_SEND_NO_VISIT
+            )
+
+        else:
+            await message.answer(
+                text=WRONG_SEND
+            )
 
     else:
         await message.answer(

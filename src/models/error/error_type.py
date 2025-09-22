@@ -6,6 +6,7 @@ class ErrorType(enum.Enum):
     USER_NOT_FOUND = "USER_NOT_FOUND"
     VISIT_ALREADY_EXISTS = "VISIT_ALREADY_EXISTS"
     ACTIVITY_NOT_FOUND = "ACTIVITY_NOT_FOUND"
+    VISIT_NOT_FOUND = "VISIT_NOT_FOUND"
 
     def __missing__(self, key):
         return self.NONE
