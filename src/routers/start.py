@@ -1,5 +1,6 @@
 from aiogram import Router, Bot
 from aiogram import F
+from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
 from aiogram.filters.state import State, StatesGroup
 from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery, InlineKeyboardMarkup
@@ -214,13 +215,16 @@ async def register_end(callback: CallbackQuery, state: FSMContext, user_client: 
 
         await callback.message.answer(
             text=COMMAND_LIST_TEXT,
-            reply_markup=get_main_reply_keyboard()
+            reply_markup=get_main_reply_keyboard(),
+            parse_mode=ParseMode.HTML
         )
         await callback.message.answer(
-            text=GIFTS_MESSAGE
+            text=GIFTS_MESSAGE,
+            parse_mode=ParseMode.HTML
         )
         await callback.message.answer(
-            text=HELP_MESSAGE
+            text=HELP_MESSAGE,
+            parse_mode=ParseMode.HTML
         )
 
     else:
